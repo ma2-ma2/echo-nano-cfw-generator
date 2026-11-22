@@ -1,0 +1,2116 @@
+<!doctype html>
+<!-- ECHO NANO CFW 生成アプリ（非公式） Copyright (c) 2026 ma2-ma2. MIT License: https://opensource.org/license/mit -->
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECHO NANO CFW 生成アプリ</title>
+<style>
+:root{
+  --bg:#f4f5f3;--surface:#fff;--surface-2:#f0f2ef;--text:#1b1f1e;--muted:#5d6764;--line:#d9dedb;
+  --accent:#0d7a72;--accent-ink:#fff;--accent-soft:#dcefed;--ok:#1a7f43;--ok-soft:#e1f3e7;
+  --warn:#9a5b00;--warn-soft:#fbf0dc;--error:#b42318;--error-soft:#fbe5e2;--focus:#0d7a72;
+  --shadow:0 1px 2px #0000000f,0 4px 16px #00000010;
+  color-scheme:light;font:15px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121514;--surface:#1b1f1e;--surface-2:#232827;--text:#e6ebe9;--muted:#9aa6a2;--line:#323937;
+  --accent:#4cc2b6;--accent-ink:#0b1f1d;--accent-soft:#163632;--ok:#5fd08d;--ok-soft:#173424;
+  --warn:#f0b250;--warn-soft:#3a2d14;--error:#ff8a7a;--error-soft:#3d1c18;--focus:#4cc2b6;
+  --shadow:0 1px 2px #0006,0 4px 16px #0005;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121514;--surface:#1b1f1e;--surface-2:#232827;--text:#e6ebe9;--muted:#9aa6a2;--line:#323937;
+  --accent:#4cc2b6;--accent-ink:#0b1f1d;--accent-soft:#163632;--ok:#5fd08d;--ok-soft:#173424;
+  --warn:#f0b250;--warn-soft:#3a2d14;--error:#ff8a7a;--error-soft:#3d1c18;--focus:#4cc2b6;
+  --shadow:0 1px 2px #0006,0 4px 16px #0005;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.82rem;overflow-wrap:anywhere}
+
+header{max-width:76rem;margin:0 auto;padding:1.6rem 1rem .6rem;display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:end;justify-content:space-between}
+header h1{margin:0;font-size:1.45rem;letter-spacing:.01em}
+header p{margin:.1rem 0 0;color:var(--muted);font-size:.9rem}
+.chip-note{font-size:.8rem;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.2rem .7rem;white-space:pre-line;max-width:100%}
+.chip-note[data-tone="ok"]{color:var(--ok);border-color:currentColor}
+
+main{max-width:76rem;margin:0 auto;padding:.4rem 1rem 3rem;display:grid;gap:1rem;
+  grid-template-columns:minmax(0,1fr);grid-template-areas:"s1" "s2" "pv" "s3"}
+@media (min-width:62rem){main{grid-template-columns:minmax(0,25rem) minmax(0,1fr);
+  grid-template-rows:auto auto 1fr;grid-template-areas:"s1 pv" "s2 pv" "s3 pv"}}
+#step1{grid-area:s1}#step2{grid-area:s2}#step3{grid-area:s3}#previewPane{grid-area:pv}
+main>*{align-self:start;min-width:0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:1.1rem 1.1rem 1.2rem}
+.card+.card{margin-top:1rem}
+.card h2{display:flex;align-items:center;gap:.6rem;margin:0 0 .25rem;font-size:1.05rem}
+.card h3{margin:1.1rem 0 .4rem;font-size:.92rem}
+.lead{margin:0 0 .8rem;color:var(--muted);font-size:.88rem}
+.step-no{flex:none;display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;
+  background:var(--surface-2);color:var(--muted);font-size:.82rem;font-weight:700;border:1px solid var(--line)}
+section[data-state="done"] .step-no{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+section[data-state="ready"] .step-no{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:2.4rem;padding:.4rem .95rem;
+  border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:.9rem;text-align:center}
+.btn:hover:not(:disabled){background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.07);background:var(--accent)}
+.btn.big{width:100%;min-height:2.9rem;font-size:1rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{min-height:2rem;padding:.2rem .7rem;font-size:.82rem;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.file{position:relative}
+.file input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.file input:disabled{cursor:not-allowed}
+.file:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+.file:has(input:disabled){opacity:.45}
+.drop{display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:1rem;border:1.5px dashed var(--line);
+  border-radius:12px;background:var(--surface-2);text-align:center;font-size:.85rem;color:var(--muted)}
+.drop strong{color:var(--text);font-size:.95rem}
+.drop[data-drag]{border-color:var(--accent);background:var(--accent-soft)}
+
+.status{margin:.7rem 0 0;font-size:.85rem;white-space:pre-line;overflow-wrap:anywhere}
+.status:empty{display:none}
+.status[data-tone="error"]{color:var(--error)}
+.status[data-tone="ok"]{color:var(--ok)}
+.status[data-tone="busy"]{color:var(--muted)}
+.checks{list-style:none;margin:.7rem 0 0;padding:0;display:grid;gap:.25rem;font-size:.85rem}
+.checks:empty{display:none}
+.checks li{display:flex;gap:.5rem;align-items:baseline}
+.checks li::before{content:"✓";flex:none;width:1.1rem;height:1.1rem;border-radius:50%;display:inline-grid;place-items:center;
+  font-size:.7rem;font-weight:700;background:var(--ok-soft);color:var(--ok)}
+.checks li[data-tone="error"]::before{content:"✕";background:var(--error-soft);color:var(--error)}
+.checks li[data-tone="warn"]::before{content:"!";background:var(--warn-soft);color:var(--warn)}
+.checks li span{color:var(--muted)}
+
+.option{border:1px solid var(--line);border-radius:12px;padding:.8rem .9rem;background:var(--surface)}
+.option+.option{margin-top:.7rem}
+.option:has(.switch input:checked){border-color:var(--accent);background:linear-gradient(var(--accent-soft),var(--accent-soft)) top/100% 3px no-repeat,var(--surface)}
+.switch{display:flex;gap:.75rem;align-items:flex-start;cursor:pointer}
+.switch input{appearance:none;flex:none;margin:.15rem 0 0;width:2.4rem;height:1.4rem;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:.15rem;left:.15rem;width:1.1rem;height:1.1rem;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0004;transition:transform .15s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{transform:translateX(1rem)}
+.switch b{display:block;font-size:.95rem}
+.switch small{display:block;color:var(--muted);font-size:.82rem;line-height:1.5}
+.option-body{margin:.7rem 0 0 3.15rem}
+.option>.switch b::after{content:"初期値";margin-left:.5rem;white-space:nowrap;display:inline-block;padding:.02rem .45rem;border-radius:999px;font-size:.7rem;font-weight:700;vertical-align:.1em;
+  background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.option[data-changed]>.switch b::after,.option>.switch:has(input:checked) b::after{content:"変更";background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.switch span:not(:has(b)) small{margin-top:.1rem}
+.switch.sub{margin:.1rem 0 .4rem}
+.boot-compare{display:grid;gap:.4rem;margin-top:.6rem}
+.boot-compare figure{margin:0;font-size:.75rem;color:var(--muted)}
+.boot-compare .strip{margin:.2rem 0 0;aspect-ratio:128/32}
+.mapping{display:grid;grid-template-columns:auto 1fr 1fr;gap:.15rem .7rem;font-size:.8rem;margin-top:.5rem}
+.mapping span:nth-child(-n+3){color:var(--muted);font-size:.74rem}
+.mapping .changed{color:var(--accent);font-weight:700}
+
+details.more{margin-top:.8rem;border-top:1px solid var(--line);padding-top:.6rem}
+details.more summary{cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted)}
+details.more[open] summary{color:var(--text)}
+.field{display:grid;gap:.25rem;margin:.6rem 0;font-size:.85rem}
+.field select,.field input[type="text"],.field input[type="number"]{padding:.35rem .5rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-width:100%}
+.inline-fields{display:flex;flex-wrap:wrap;gap:.2rem 1rem}
+.inline-fields .field{flex:1 1 9rem}
+.glyph-comparison{display:flex;gap:1rem;font-size:.78rem;color:var(--muted);margin:.6rem 0}
+.glyph-comparison canvas{display:block;width:64px;height:48px;image-rendering:pixelated;border-radius:4px;margin-top:.2rem}
+fieldset{border:0;margin:0;padding:0;min-inline-size:0}
+fieldset:disabled{opacity:.5}
+
+.result{margin-top:.9rem}
+.hint{margin:.5rem 0 0;font-size:.82rem;color:var(--muted)}
+.hint[data-tone="ok"]{color:var(--ok)}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:.05rem .45rem;border-radius:999px;background:var(--ok-soft);color:var(--ok)}
+.save-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.8rem}
+.save-grid .wide{grid-column:1/-1}
+.note{font-size:.8rem;color:var(--muted);margin:.8rem 0 0}
+
+/* device stage */
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between;margin:.4rem 0 .2rem}
+.segmented{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:2px;background:var(--surface-2)}
+.segmented label{position:relative}
+.segmented input{position:absolute;opacity:0;inset:0}
+.segmented span{display:block;padding:.25rem .75rem;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer}
+.segmented input:checked+span{background:var(--surface);color:var(--text);box-shadow:0 1px 2px #0002}
+.segmented input:focus-visible+span{outline:2px solid var(--focus)}
+.swatches{display:flex;gap:.35rem;flex-wrap:wrap}
+.swatches label{position:relative}
+.swatches input{position:absolute;opacity:0;inset:0}
+.swatches span{display:block;width:1.35rem;height:1.35rem;border-radius:50%;background:var(--swatch);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 30%,transparent);cursor:pointer}
+.swatches input:checked+span{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.swatches input:focus-visible+span{outline:2px solid var(--focus);outline-offset:4px}
+
+.stage{position:relative;width:100%;aspect-ratio:1000/470;margin:.3rem 0 0;user-select:none}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.stage svg path{fill:none;stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke}
+.stage svg path.active{stroke:var(--accent);stroke-width:2}
+.callout{position:absolute;z-index:2;max-width:21%;padding:.12rem .5rem;border-radius:7px;border:1px solid var(--line);
+  background:var(--surface);font-size:clamp(.68rem,1.55vw,.82rem);font-weight:600;line-height:1.35;cursor:pointer;text-align:center;
+  overflow-wrap:anywhere;box-shadow:0 1px 2px #0001}
+.callout[data-place="top"]{transform:translate(-50%,-100%)}
+.callout[data-place="bottom"]{transform:translate(-50%,0)}
+.callout[data-place="left"]{transform:translate(-100%,-50%)}
+.callout[data-place="right"]{transform:translate(0,-50%)}
+.callout[data-changed]{border-color:var(--accent);color:var(--accent)}
+.callout[data-unverified]{border-style:dashed}
+.callout[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.device{--case:#79c0c9;--wheel-edge:#75818a;--wheel-mid:#aebac0;--wheel-light:#edf6f8;
+  position:absolute;left:25%;top:31.5%;width:73%;height:37%;filter:drop-shadow(0 6px 8px #0003)}
+.stage[data-orientation="inverted"] .device{left:2%;transform:rotate(180deg)}
+.stage[data-orientation="inverted"] .oled{transform:rotate(180deg)}
+.device[data-color="black"]{--case:#272a31;--wheel-edge:#5e080b;--wheel-mid:#b71b20;--wheel-light:#f6504b}
+.device[data-color="titanium"]{--case:#a8a293;--wheel-edge:#65594a;--wheel-mid:#a5977c;--wheel-light:#efe2c4}
+.device[data-color="green"]{--case:#184c54;--wheel-edge:#6f633f;--wheel-mid:#c4b484;--wheel-light:#f2e4b9}
+.device[data-color="white"]{--case:#e6e7e4;--wheel-edge:#0c1013;--wheel-mid:#24292e;--wheel-light:#55585a}
+.device[data-color="pink"]{--case:#e9aebd;--wheel-edge:#8c8588;--wheel-mid:#c6c3c2;--wheel-light:#f9f6ef}
+.device[data-color="purple"]{--case:#552483;--wheel-edge:#77551c;--wheel-mid:#c69a41;--wheel-light:#ffe3a2}
+.dv-body{position:absolute;left:12.5%;right:0;top:0;bottom:0;border-radius:4px 10px 10px 4px;
+  background:linear-gradient(#ffffff38 0 15%,#ffffff12 16% 83%,#00000038 84%),var(--case);box-shadow:inset 0 0 0 1px #0003}
+.dv-cap{position:absolute;right:2.6%;top:0;bottom:0;width:1px;background:#0003}
+.dv-loop{position:absolute;left:0;top:0;bottom:0;width:14%;border:.55em solid var(--case);border-right-width:.75em;
+  border-radius:22% 8% 8% 22%/ 40% 14% 14% 40%;box-shadow:inset 0 0 0 1px #0004,0 0 0 1px #0003;
+  background:linear-gradient(#ffffff2e 0 15%,transparent 16% 83%,#0000002e 84%)}
+.dv-loop{border-width:clamp(3px,1.1vw,8px)}
+.dv-wheel{position:absolute;left:3.1%;top:15%;width:6.6%;height:70%;display:grid;grid-template-rows:1fr 1fr;border-radius:5px;overflow:hidden;
+  background:repeating-linear-gradient(#0003 0 1px,transparent 1px 3px),
+    linear-gradient(90deg,var(--wheel-edge),var(--wheel-mid) 24%,var(--wheel-light) 46%,var(--wheel-mid) 75%,var(--wheel-edge));
+  border:1px solid var(--wheel-edge)}
+.hit{all:unset;cursor:pointer;display:block}
+.hit:hover{background:#ffffff30}
+.hit:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.hit[data-flash]{background:#ffffff70}
+.dv-power{position:absolute;left:-1.4%;top:41%;width:1.6%;height:18%;border-radius:3px;background:linear-gradient(90deg,#666b6e,#b8bdbf);box-shadow:inset 0 0 0 1px #0004}
+.dv-btn{position:absolute;top:-7%;height:8%;border-radius:3px 3px 1px 1px;background:linear-gradient(#e2e5e6,#8d9294);box-shadow:inset 0 0 0 1px #0004}
+.dv-play{left:23.5%;width:6%}
+.dv-rocker{left:33%;width:19%;display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+.dv-rocker .hit+.hit{border-left:1px solid #0003}
+.dv-screen{position:absolute;left:19.5%;width:47%;top:20%;height:60%;border-radius:5px;background:#050606;
+  display:grid;place-items:center;box-shadow:inset 0 0 0 1px #ffffff14,inset 0 -8px 16px #ffffff08}
+.oled{width:84%;aspect-ratio:128/40;image-rendering:pixelated;display:block}
+.dv-mark{position:absolute;right:5%;top:50%;transform:translateY(-50%) rotate(90deg);font-size:clamp(5px,.8vw,8px);letter-spacing:.12em;color:#0006;font-weight:700}
+.device[data-color="black"] .dv-mark,.device[data-color="green"] .dv-mark,.device[data-color="purple"] .dv-mark{color:#fff5}
+.device [data-active]{box-shadow:0 0 0 2px var(--accent)}
+
+.info{margin-top:.7rem;border-radius:12px;background:var(--surface-2);padding:.7rem .85rem;font-size:.85rem;min-height:3.6rem}
+.info b{display:block;font-size:.9rem}
+.info p{margin:.15rem 0 0;color:var(--muted)}
+.sim{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;font-size:.8rem;color:var(--muted);min-height:1.4rem}
+.sim output{color:var(--text);font-weight:600}
+
+.strip{display:block;width:100%;image-rendering:pixelated;border-radius:6px;background:#000;margin:.5rem 0 .3rem}
+.split{display:grid;gap:1rem;grid-template-columns:minmax(0,1fr)}
+@media (min-width:44rem){.split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.track-nav{display:flex;gap:.4rem;align-items:center}
+.track-nav select{flex:1;min-width:0}
+.small-print{font-size:.78rem;color:var(--muted);margin:.4rem 0 0}
+@media (max-width:30rem){.card{padding:.95rem .85rem 1rem}.callout{padding:.1rem .3rem;letter-spacing:-.02em}main{padding-inline:.6rem}}
+</style>
+<header>
+  <div>
+    <h1>ECHO NANO CFW 生成アプリ</h1>
+    <p>ベータ版 · 対象 公式V2.0.0 · ブラウザ内で完結（通信なし）</p>
+  </div>
+  <output id="browserStatus" class="chip-note" aria-label="ブラウザの対応状況"></output>
+</header>
+<noscript><p style="text-align:center">このアプリを使うには、ブラウザでJavaScriptを有効にしてください。</p></noscript>
+<main>
+<section id="step1" class="card" data-state="ready">
+  <h2><span class="step-no">1</span>公式ファームウェアを読み込む</h2>
+  <p class="lead">FiiOから入手した公式V2.0.0の <code>NANOV200.IMG</code> を選びます。ファイルは外部に送信されません。</p>
+  <div class="drop" id="imageDrop">
+    <strong>IMGをここにドロップ</strong>
+    <span>または</span>
+    <span class="btn file">ファイルを選ぶ<input id="image" type="file" accept=".img" aria-label="公式 V2.0.0 IMG"></span>
+  </div>
+  <p id="sourceStatus" class="status" aria-live="polite"></p>
+  <ul id="sourceChecks" class="checks" aria-label="公式IMGの検証結果"></ul>
+  <div class="row" style="margin-top:.8rem"><button id="backup" class="btn small" disabled>公式IMGの控えを保存</button></div>
+</section>
+
+<section id="step2" class="card">
+  <h2><span class="step-no">2</span>変更する内容を選ぶ</h2>
+  <p class="lead">必要なものだけをオンにします。オフの項目は公式のまま（初期値）です。</p>
+  <div class="row" style="margin:-.2rem 0 .8rem">
+    <button type="button" class="btn small" id="resetAll">すべて初期値に戻す</button>
+    <span id="resetStatus" class="small-print" style="margin:0" aria-live="polite"></span>
+  </div>
+  <div class="option" id="controlOption">
+    <label class="switch"><input type="checkbox" id="swapControls" role="switch">
+      <span><b>操作の入れ替え</b><small>ホイールで曲送り・曲戻し、側面ボタンで音量を操作します。</small></span></label>
+    <div class="option-body">
+      <label class="switch sub"><input type="checkbox" id="reverseWheel" role="switch">
+        <span><small>ホイールの回す向きを逆にする</small></span></label>
+      <label class="switch sub"><input type="checkbox" id="reverseSide" role="switch">
+        <span><small>側面ボタンの左右を逆にする</small></span></label>
+      <div class="mapping" aria-label="操作の割り当て">
+        <span>操作</span><span>公式</span><span>変更後</span>
+        <span>ホイール＋</span><span>Vol. ＋</span><span id="mapWheelUp"></span>
+        <span>ホイール−</span><span>Vol. −</span><span id="mapWheelDown"></span>
+        <span>曲送りボタン</span><span>曲送り</span><span id="mapSideNext"></span>
+        <span>曲戻りボタン</span><span>曲戻り</span><span id="mapSidePrev"></span>
+      </div>
+      <p class="small-print">曲送りと曲戻し、Vol.＋とVol.−は必ず組で割り当てます。変わるのは再生画面の操作です。2回押し・長押し・画面消灯中の動作、向きを逆にした場合の動作は実機未確認です。</p>
+    </div>
+  </div>
+  <div class="option">
+    <label class="switch"><input type="checkbox" id="useFont" role="switch">
+      <span><b>日本語フォントの入れ替え</b><small>手元のTTF／OTFフォントから12ドットの字形を作ります。以前に作ったCFWのIMG（V1.6用・V2.0.0用）から字形を取り出すこともできます。</small></span></label>
+    <div class="option-body">
+      <span class="btn small file">フォントを選ぶ<input id="font" type="file" accept=".ttf,.otf,.img" disabled aria-label="フォント（TTF／OTF、またはCFWのIMG）"></span>
+      <p id="fontStatus" class="status" aria-live="polite"></p>
+      <label class="field" style="max-width:16rem">TTF／OTFの上下位置
+        <select id="verticalShift">
+          <option value="auto" selected>自動で補正（推奨）</option>
+          <option value="-4">4ドット上へ</option><option value="-3">3ドット上へ</option><option value="-2">2ドット上へ</option><option value="-1">1ドット上へ</option>
+          <option value="0">補正しない</option>
+          <option value="1">1ドット下へ</option><option value="2">2ドット下へ</option><option value="3">3ドット下へ</option><option value="4">4ドット下へ</option>
+        </select></label>
+      <details class="more">
+        <summary>使えるフォントの目安</summary>
+        <div class="small-print">
+          <p><b>大きさ</b>：字形は高さ12ドット（ベースラインより上10・下2）。横幅は文字ごとに公式の送り幅で決まっていて変えられません。漢字はほぼ12、ひらがな・カタカナは8〜12（多くは9〜11）、半角英数はおもに6ドットです。収まらない文字は公式の字形のままになります。</p>
+          <p><b>向いているフォント</b>：12ドット以下で作られたドットフォント（ビットマップフォントをTTF化したもの）。普通のアウトラインフォントは12pxではにじむため、きれいに変換できません。</p>
+          <p><b>例</b>（上下位置を自動で補正して変換したときに置き換えられた字数。ライセンスはフォント内の表記）</p>
+          <ul>
+            <li>JFドットK12：9,872字。パブリックドメイン</li>
+            <li>JFドットM+10／M+12：6,886字／6,717字。改変・再配布・商用とも自由（M+ FONTS）</li>
+            <li>JFドット東雲ゴシック12：6,773字。パブリックドメイン（さらに多くの東雲の字形を使うなら、フォントを入れ替えたCFWのIMGを読み込む）</li>
+          </ul>
+          <p>どれも無保証です。利用前に配布元のライセンスを確認してください。</p>
+        </div>
+      </details>
+      <details class="more" id="glyphDetails">
+        <summary>字形の高さ・位置の調整（任意）</summary>
+        <fieldset id="glyphControls" disabled>
+          <label class="switch" style="margin-top:.6rem"><input type="checkbox" id="autoGlyphs" role="switch">
+            <span><b style="font-size:.85rem">かなを公式字形の高さに自動補正</b><small>通常サイズのかなだけが対象です。</small></span></label>
+          <label class="field">曲名から調整する文字<select id="glyphChoice"></select></label>
+          <div class="inline-fields">
+            <label class="field">上下移動（＋で下）<input id="glyphShift" type="number" min="-11" max="11" value="0"></label>
+            <label class="field">点灯部分の高さ（0で維持）<input id="glyphHeight" type="number" min="0" max="12" value="0"></label>
+          </div>
+          <div class="row">
+            <button type="button" class="btn small" id="applyGlyph">調整を登録</button>
+            <button type="button" class="btn small" id="removeGlyph">登録を解除</button>
+          </div>
+          <div class="glyph-comparison">
+            <div>公式字形<canvas id="officialGlyph" width="16" height="12"></canvas></div>
+            <div>生成結果<canvas id="resultGlyph" width="16" height="12"></canvas></div>
+          </div>
+          <p id="glyphStatus" class="status" aria-live="polite"></p>
+        </fieldset>
+      </details>
+    </div>
+  </div>
+  <div id="screenOptions"></div>
+  <template id="screenTemplate">
+    <div class="option">
+      <label class="switch"><input type="checkbox" data-role="use" role="switch">
+        <span><b data-role="title"></b><small data-role="summary"></small></span></label>
+      <div class="option-body">
+        <span class="btn small file">画像を選ぶ<input data-role="file" type="file" accept="image/png,image/gif,image/bmp,image/webp,image/jpeg" disabled></span>
+        <p data-role="status" class="status" aria-live="polite"></p>
+        <div class="boot-compare">
+          <figure><figcaption>公式（初期画像）</figcaption><canvas data-role="official" class="strip" width="128" height="32"></canvas></figure>
+          <figure><figcaption>変換後のドット表示</figcaption><canvas data-role="result" class="strip" width="128" height="32"></canvas></figure>
+        </div>
+        <label class="field" data-role="frameField">表示するコマ <output data-role="frameValue"></output>
+          <input data-role="frame" type="range" min="1" value="1"></label>
+        <button type="button" class="btn small" data-role="play" disabled>本体で再生</button>
+        <fieldset data-role="controls" disabled>
+          <label class="field">点灯させる明るさ <output data-role="thresholdValue">128</output>
+            <input data-role="threshold" type="range" min="1" max="255" value="128"></label>
+          <label class="switch"><input type="checkbox" data-role="invert" role="switch">
+            <span><small>明暗を反転（暗い部分を点灯）</small></span></label>
+          <div class="row" style="margin-top:.6rem">
+            <button type="button" class="btn small primary" data-role="confirm">この表示で決定</button>
+            <button type="button" class="btn small" data-role="png">ドット画像を保存（PNG）</button>
+          </div>
+        </fieldset>
+        <p class="small-print" data-role="note"></p>
+      </div>
+    </div>
+  </template>
+</section>
+
+<section id="step3" class="card">
+  <h2><span class="step-no">3</span>生成して保存する</h2>
+  <button id="generate" class="btn primary big" disabled>CFWを生成</button>
+  <p id="generateHint" class="hint"></p>
+  <div class="result">
+    <p id="result" class="status" aria-live="polite"></p>
+    <ul id="resultChecks" class="checks" aria-label="生成結果"></ul>
+    <p id="resultHash" class="mono" hidden></p>
+  </div>
+  <div class="save-grid">
+    <button id="save" class="btn" disabled>IMGを保存</button>
+    <button id="report" class="btn" disabled>検証レポート</button>
+    <button id="stage" class="btn wide" disabled>更新用コピーを保存先に書き込む</button>
+  </div>
+  <p class="note">本体の内蔵ストレージのルートに、IMGを1本だけ置きます。保存後はOSで安全に取り出して、本体を再起動してください。改造したファームウェアの書き込みは自己責任で行ってください。</p>
+</section>
+
+<div id="previewPane">
+<section class="card" aria-labelledby="deviceTitle">
+  <h2 id="deviceTitle">本体プレビュー</h2>
+  <p class="lead">本体のボタンやホイールを押すと操作を試せます。ラベルを押すと説明が出ます。</p>
+  <div class="toolbar">
+    <div class="segmented" role="radiogroup" aria-label="押し方">
+      <label><input type="radio" name="gesture" value="short" checked><span>短押し</span></label>
+      <label><input type="radio" name="gesture" value="long"><span>長押し</span></label>
+      <label><input type="radio" name="gesture" value="double"><span>2回押し</span></label>
+    </div>
+    <div class="segmented" role="radiogroup" aria-label="本体の向き">
+      <label><input type="radio" name="orientation" value="horizontal" checked><span>標準</span></label>
+      <label><input type="radio" name="orientation" value="inverted"><span>180°反転</span></label>
+    </div>
+  </div>
+  <div class="stage" id="keyStage" data-orientation="horizontal">
+    <svg id="keyLines" viewBox="0 0 1000 470" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="device" id="keyDevice" data-color="blue">
+      <div class="dv-loop" aria-hidden="true"></div>
+      <div class="dv-body" aria-hidden="true"></div>
+      <div class="dv-cap" aria-hidden="true"></div>
+      <div class="dv-wheel" data-part="wheel">
+        <button class="hit" data-press="wheel-down" aria-label="ホイールを−方向に回す"></button>
+        <button class="hit" data-press="wheel-up" aria-label="ホイールを＋方向に回す"></button>
+      </div>
+      <button class="hit dv-power" data-press="power" aria-label="電源ボタンを押す"></button>
+      <button class="hit dv-btn dv-play" data-press="play" aria-label="再生／停止ボタンを押す"></button>
+      <div class="dv-btn dv-rocker">
+        <button class="hit" data-press="next" aria-label="曲送りボタンを押す"></button>
+        <button class="hit" data-press="prev" aria-label="曲戻りボタンを押す"></button>
+      </div>
+      <div class="dv-screen"><canvas id="keyScreen" class="oled" width="128" height="40" aria-label="本体画面のプレビュー"></canvas></div>
+      <span class="dv-mark" aria-hidden="true">ECHO NANO</span>
+    </div>
+  </div>
+  <div class="info" id="keyInfo" aria-live="polite"></div>
+  <div class="sim">操作結果 <output id="simStatus">—</output>
+    <button type="button" class="btn small" id="bootPlay" style="margin-left:auto" disabled>電源ONを再生</button></div>
+  <div class="toolbar" style="margin-top:.8rem">
+    <div class="swatches" role="radiogroup" aria-label="本体色" id="colorSwatches"></div>
+    <span class="small-print" style="margin:0">実機の反転は「システム設定 → 画面設定 → 画面回転」</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2>曲名の表示</h2>
+  <div class="split">
+    <div>
+      <label class="field">プレビューする曲名<input id="sample" type="text" maxlength="100" value="ショウ がっさ ウィン"></label>
+      <div class="row">
+        <span class="btn small file">曲を選ぶ<input id="songs" type="file" accept="audio/*,.mp3,.flac,.wav,.m4a,.ogg,.ape,.wma,.dsf,.dff,.opus" multiple aria-label="ストレージの楽曲を選択"></span>
+        <span class="btn small file">フォルダを選ぶ<input id="songFolder" type="file" webkitdirectory multiple aria-label="楽曲フォルダを選択"></span>
+      </div>
+      <p id="songStatus" class="status" aria-live="polite"></p>
+      <div class="track-nav" id="trackNav" hidden>
+        <button type="button" class="btn small" id="songPrev" aria-label="前の曲">◀</button>
+        <select id="songPick" class="field" style="margin:0" aria-label="曲名"></select>
+        <button type="button" class="btn small" id="songNext" aria-label="次の曲">▶</button>
+      </div>
+    </div>
+    <div>
+      <canvas id="preview" class="strip" width="128" height="12" aria-label="曲名の拡大プレビュー"></canvas>
+      <p id="previewStatus" class="small-print"></p>
+      <div class="row" style="margin-top:.5rem">
+        <button type="button" class="btn small" id="scrollTitle" disabled aria-pressed="false">スクロールを一時停止</button>
+        <div class="segmented" role="radiogroup" aria-label="表示枠">
+          <label><input type="radio" name="previewFrame" value="title" checked><span>曲名枠 108px</span></label>
+          <label><input type="radio" name="previewFrame" value="full"><span>全幅 128px</span></label>
+        </div>
+      </div>
+      <label class="switch" style="margin-top:.6rem"><input type="checkbox" id="previewLight" role="switch">
+        <span><small>白背景・黒ドットで表示</small></span></label>
+    </div>
+  </div>
+  <details class="more">
+    <summary>保存済みのIMGの字形を表示</summary>
+    <div class="row" style="margin-top:.6rem">
+      <span class="btn small file">IMGを選ぶ<input id="previewImage" type="file" accept=".img" aria-label="保存済みのIMG"></span>
+      <button class="btn small" id="clearPreviewImage" disabled>編集中のプレビューに戻る</button>
+    </div>
+    <p id="previewImageStatus" class="status" aria-live="polite"></p>
+  </details>
+</section>
+</div>
+</main>
+<script>
+"use strict";
+const imageSize = 0xB00004;
+const stockHash = "e60ddde7ceae9c83f95db7710f4633a31cf72295d4821128274718dec16ff993";
+const legacyHash = "76d67a4c73e9c738d4ae7d1d51636d7b2e33006278164e528ccbb92a7743ab5c";
+// Expected output for the control swap plus the registered font-swap CFW glyphs (guards against regressions).
+const combinedHash = "6c8ce6b3efe405023e92d4d9737f68df4a34243cbc86192982b23f50b5206e55";
+const official = new Map([[stockHash, "V2.0.0"]]);
+// Header build stamp (2026-10-29); generated images keep the official header.
+const stockStamp = "26202910000000000000";
+const v16Hash = "a2e008ef3a471f8cb168b6c9c00e60654aa42ee1865faa1c64997126b9c3c730";
+const v16Stamp = "26200408000000000000";
+const fontStart = 0x15561C;
+const legacyStart = 0x1522FC;
+const fontLength = 0x10000 * 32;
+const controlsEdits = [
+  [0x14BB8, 0x27, 0xF5], [0x14BEE, 0x0F, 0xDA], [0x6002C, 0x7E, 0x37],
+  [0x60030, 0x7E, 0x50], [0x6004C, 0x42, 0x70], [0x60052, 0x24, 0x6B]
+];
+// Playback-screen key dispatch (module 27): each physical key's beq offset byte selects a handler.
+// Handlers: next 0x307CF8A, prev 0x307CFC0, vol+ 0x307D018, vol− 0x307D01C (0x307D01A jumps there).
+const controlSites = {
+  "wheel-up":   {offset:0x6002C, stock:"vol+", bytes:{next:0x37, prev:0x52, "vol+":0x7E, "vol-":0x7F}},
+  "wheel-down": {offset:0x60030, stock:"vol-", bytes:{next:0x35, prev:0x50, "vol+":0x7C, "vol-":0x7E}},
+  "next":       {offset:0x60052, stock:"next", bytes:{next:0x24, prev:0x3F, "vol+":0x6B, "vol-":0x6D}},
+  "prev":       {offset:0x6004C, stock:"prev", bytes:{next:0x27, prev:0x42, "vol+":0x6E, "vol-":0x70}}
+};
+// Resident step that turns wheel codes into global volume events; skipped unless the wheel keeps stock volume.
+const wheelVolumeEvents = [[0x14BB8, 0x27, 0xF5], [0x14BEE, 0x0F, 0xDA]];
+
+// Pairs stay together: the wheel and the side buttons each get either track or volume,
+// and either direction. swap=true with no reversal is the standard swapped layout.
+function controlAssignment({swap = false, reverseWheel = false, reverseSide = false} = {}) {
+  const pair = (track, reverse) => track ? (reverse ? ["prev", "next"] : ["next", "prev"]) : (reverse ? ["vol-", "vol+"] : ["vol+", "vol-"]);
+  const [wheelUp, wheelDown] = pair(swap, reverseWheel);
+  const [sideNext, sidePrev] = pair(!swap, reverseSide);
+  return {"wheel-up":wheelUp, "wheel-down":wheelDown, "next":sideNext, "prev":sidePrev};
+}
+
+function controlEdits(settings) {
+  const assignment = controlAssignment(settings);
+  const edits = [];
+  if (assignment["wheel-up"] !== "vol+" || assignment["wheel-down"] !== "vol-") edits.push(...wheelVolumeEvents);
+  for (const [key, site] of Object.entries(controlSites)) {
+    const before = site.bytes[site.stock];
+    const after = site.bytes[assignment[key]];
+    if (after !== before) edits.push([site.offset, before, after]);
+  }
+  return edits.sort((a, b) => a[0] - b[0]);
+}
+async function sha256(bytes) {
+  if (!globalThis.crypto?.subtle) throw new Error("SHA-256を利用できません。最新版のChromeまたはEdgeで開いてください。");
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return toHex(new Uint8Array(digest));
+}
+
+function toHex(bytes) {
+  return Array.from(bytes, value => value.toString(16).padStart(2, "0")).join("");
+}
+
+function inspectIntegrity(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const duplicate = view.getUint32(0x1f4, true);
+  const crcOffset = bytes.length - 4;
+  const headersMatch = duplicate >= 512 && duplicate % 512 === 0 &&
+    duplicate + 512 <= crcOffset &&
+    bytes.subarray(0, 512).every((value, index) => value === bytes[duplicate + index]);
+
+  const table = new Uint32Array(256);
+  for (let index = 0; index < table.length; index++) {
+    let crc = index << 24;
+    for (let bit = 0; bit < 8; bit++) {
+      crc = (crc << 1) ^ ((crc >>> 31) ? 0x04c10db7 : 0);
+    }
+    table[index] = crc;
+  }
+  let crc = 0;
+  for (let index = 0; index < crcOffset; index++) {
+    crc = (crc << 8) ^ table[(crc >>> 24) ^ bytes[index]];
+  }
+  const computedCrc = crc >>> 0;
+  const storedCrc = view.getUint32(crcOffset, true);
+  return {headersMatch, computedCrc, storedCrc};
+}
+
+function crcHex(value) {
+  return value.toString(16).toUpperCase().padStart(8, "0");
+}
+
+async function inspect(file) {
+  if (file.size !== imageSize) {
+    throw new Error(`未対応のサイズです（${file.size.toLocaleString()}バイト）。`);
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes.length !== imageSize) throw new Error("IMGのサイズが変化しました。再選択してください。");
+  const hash = await sha256(bytes);
+  return {bytes, hash, version: official.get(hash), ...inspectIntegrity(bytes)};
+}
+
+function baselineWidth(record) {
+  return record[24] >= 0x81 && record[24] <= 0x8F ? record[24] - 0x80 : 0;
+}
+
+function sameBytes(first, second) {
+  return first.length === second.length && first.every((value, index) => value === second[index]);
+}
+
+function legacyBitmap(record, code, width) {
+  const view = new DataView(record.buffer, record.byteOffset, 24);
+  let ink = 0;
+  for (let row = 0; row < 12; row++) ink |= view.getUint16(row * 2);
+  if (!ink) return record.subarray(0, 24);
+  const left = Math.clz32(ink) - 16;
+  const right = 15 - (31 - Math.clz32(ink & -ink));
+  let shift = Number("ョァィゥっぃぅ".includes(String.fromCharCode(code)));
+  if (right >= width) {
+    // Keep a blank right column when the glyph allows it; otherwise use the whole advance
+    // (as the TTF path does) instead of falling back to the narrower official glyph.
+    if (right - left > width - 1) return null;
+    shift = right - (width - (right - left > width - 2 ? 1 : 2));
+  }
+  if (left < shift) throw new Error("字形補正が範囲外です。");
+  const bitmap = new Uint8Array(24);
+  const output = new DataView(bitmap.buffer);
+  for (let row = 0; row < 12; row++) output.setUint16(row * 2, view.getUint16(row * 2) << shift);
+  return bitmap;
+}
+
+// Glyph table for previewing a CFW's font before generating. V2.0.0 CFWs are used as they are;
+// V1.6 glyphs are fitted to the advance the same way buildImage does. Only the font table is filled.
+function fontPreviewBytes(external, base) {
+  if (external.kind === "cfw") return external.bytes;
+  const bytes = new Uint8Array(fontStart + fontLength);
+  for (let code = 0; code < 0x10000; code++) {
+    const from = external.start + code * 32;
+    const to = fontStart + code * 32;
+    const record = external.bytes.subarray(from, from + 32);
+    bytes.set(record, to);
+    const official = base?.subarray(to, to + 32);
+    if (official && sameBytes(official, record)) continue;
+    const width = baselineWidth(record);
+    let bitmap = null;
+    try { bitmap = width && legacyBitmap(record, code, width); } catch { bitmap = null; }
+    if (bitmap) bytes.set(bitmap, to);
+    else if (official) bytes.set(official.subarray(0, 24), to);
+  }
+  return bytes;
+}
+
+// Read Unicode coverage before rasterizing so missing glyphs keep their official bitmap.
+function coverage(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const signature = view.getUint32(0);
+  if (signature !== 0x10000 && signature !== 0x4F54544F) throw new Error("TTF／OTF形式を確認してください。");
+  const tables = view.getUint16(4);
+  let start, end;
+  for (let i = 0; i < tables; i++) {
+    const record = 12 + i * 16;
+    if (view.getUint32(record) !== 0x636D6170) continue;
+    start = view.getUint32(record + 8);
+    end = start + view.getUint32(record + 12);
+    break;
+  }
+  if (start === undefined || end > bytes.length || end - start < 4) throw new Error("Unicode文字マップを読み込めません。");
+  const count = view.getUint16(start + 2);
+  if (start + 4 + count * 8 > end) throw new Error("文字マップが破損しています。");
+  const mapped = new Set();
+  for (let i = 0; i < count; i++) {
+    const record = start + 4 + 8 * i;
+    const platform = view.getUint16(record);
+    const encoding = view.getUint16(record + 2);
+    if (platform !== 0 && !(platform === 3 && (encoding === 1 || encoding === 10))) continue;
+    const sub = start + view.getUint32(record + 4);
+    if (sub + 4 > end) throw new Error("文字マップが範囲外です。");
+    const format = view.getUint16(sub);
+    if (format === 12) {
+      if (sub + 16 > end) throw new Error("文字マップが破損しています。");
+      const limit = sub + view.getUint32(sub + 4);
+      const groups = view.getUint32(sub + 12);
+      if (limit > end || sub + 16 + groups * 12 > limit) throw new Error("文字マップが破損しています。");
+      let previous = -1;
+      for (let group = 0; group < groups; group++) {
+        const position = sub + 16 + group * 12;
+        const first = view.getUint32(position);
+        const last = view.getUint32(position + 4);
+        const glyph = view.getUint32(position + 8);
+        if (first <= previous || first > last) throw new Error("文字マップの範囲が不正です。");
+        previous = last;
+        for (let code = first + Number(glyph === 0); code <= Math.min(last, 0xFFFF); code++) mapped.add(code);
+      }
+    } else if (format === 4) {
+      const limit = sub + view.getUint16(sub + 2);
+      const size = view.getUint16(sub + 6) / 2;
+      if (!Number.isInteger(size) || !size || limit > end || sub + 16 + size * 8 > limit) throw new Error("文字マップが破損しています。");
+      let previous = -1;
+      for (let segment = 0; segment < size; segment++) {
+        const last = view.getUint16(sub + 14 + 2 * segment);
+        const first = view.getUint16(sub + 16 + 2 * (size + segment));
+        const delta = view.getInt16(sub + 16 + 2 * (2 * size + segment));
+        const position = sub + 16 + 2 * (3 * size + segment);
+        const range = view.getUint16(position);
+        if (first <= previous || first > last) throw new Error("文字マップの範囲が不正です。");
+        previous = last;
+        for (let code = first; code <= last && code < 0xFFFF; code++) {
+          const address = position + range + (code - first) * 2;
+          if (range && address + 2 > limit) throw new Error("文字マップが範囲外です。");
+          const glyph = range ? view.getUint16(address) : code;
+          if ((!range || glyph) && ((glyph + delta) & 0xFFFF)) mapped.add(code);
+        }
+      }
+    }
+  }
+  if (!mapped.size) throw new Error("対応するUnicode文字マップがありません。");
+  return mapped;
+}
+
+async function loadExternal(file) {
+  if (file.size < 12 || file.size > 32 * 1024 * 1024) throw new Error("フォントファイルのサイズが対象外です。");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const hash = await sha256(bytes);
+  if (/\.img$/i.test(file.name)) {
+    // A CFW made earlier: its changed glyphs are read back from the font table. V1.6 and V2.0.0
+    // share the same official font data, so any glyph that differs from it was customised.
+    if (bytes.length !== imageSize) throw new Error("ECHO NANO用のIMGではありません（サイズが違います）。");
+    if (hash === stockHash || hash === v16Hash) throw new Error("公式のIMGには変更した字形がありません。フォントを入れ替えたCFWのIMGを選んでください。");
+    // Older V1.6 CFWs kept the official CRC, so a CRC mismatch is only reported, not refused.
+    const {headersMatch, computedCrc, storedCrc} = inspectIntegrity(bytes);
+    if (!headersMatch) throw new Error("複製ヘッダーが一致しません。壊れていないCFWのIMGを選んでください。");
+    const crcMismatch = computedCrc !== storedCrc;
+    const stamp = toHex(bytes.subarray(0, 10));
+    if (stamp === stockStamp) return {hash, name: file.name, bytes, kind: "cfw", start: fontStart, version: "V2.0.0", crcMismatch};
+    if (stamp === v16Stamp) return {hash, name: file.name, bytes, kind: "legacy", start: legacyStart, version: "V1.6", crcMismatch};
+    throw new Error("V1.6またはV2.0.0用のCFWのIMGを選んでください。");
+  }
+  const mapped = coverage(bytes);
+  const face = await new FontFace("external_" + hash, bytes).load();
+  return {hash, name: file.name, face, mapped, kind: "outline"};
+}
+
+// Draws each character at 12px and keeps the 12 rows it occupies after a font-wide vertical shift.
+// Without the shift, dot fonts whose em box sits higher or lower than the firmware's lose most glyphs.
+const shiftReference = "国漢字書愛東京日本語音楽曲名";
+function rasterizer(font) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 40;
+  const context = canvas.getContext("2d", {willReadFrequently: true});
+  context.font = '12px "' + font.face.family + '"';
+  context.textBaseline = "alphabetic";
+  const baseline = 24;
+  const draw = character => {
+    context.clearRect(0, 0, 32, 40);
+    context.fillText(character, 8, baseline);
+    return context.getImageData(0, 0, 32, 40).data;
+  };
+  const inkRows = pixels => {
+    let top = 40, bottom = -1;
+    for (let y = 0; y < 40; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixels[(y * 32 + x) * 4 + 3] >= 128) { top = Math.min(top, y); bottom = Math.max(bottom, y); break; }
+      }
+    }
+    return bottom < 0 ? null : {top, bottom};
+  };
+  // Row 0 of the 12-row record is canvas row baseline − 10 − shift; a positive shift moves the glyph down.
+  const firstRow = shift => baseline - 10 - shift;
+  const render = (code, width, shift = 0) => {
+    const character = String.fromCharCode(code);
+    const metric = context.measureText(character);
+    const span = Math.ceil(metric.actualBoundingBoxLeft + metric.actualBoundingBoxRight);
+    if (span < 1 || span > width || metric.actualBoundingBoxLeft > 8 || metric.actualBoundingBoxRight > 24) return null;
+    const pixels = draw(character);
+    const origin0 = firstRow(shift);
+    let left = 32, right = -1;
+    for (let y = 0; y < 40; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixels[(y * 32 + x) * 4 + 3] < 128) continue;
+        if (y < origin0 || y >= origin0 + 12) return null;
+        left = Math.min(left, x);
+        right = Math.max(right, x);
+      }
+    }
+    const inkWidth = right - left + 1;
+    if (right < 0 || inkWidth > width) return null;
+    const origin = Math.floor((width - inkWidth) / 2);
+    const result = new Uint8Array(24);
+    const view = new DataView(result.buffer);
+    for (let row = 0; row < 12; row++) {
+      let bits = 0;
+      for (let x = left; x <= right; x++) {
+        if (pixels[((row + origin0) * 32 + x) * 4 + 3] >= 128) bits |= 0x8000 >>> (x - left + origin);
+      }
+      view.setUint16(row * 2, bits);
+    }
+    return result;
+  };
+  // Try shifts −4..+4 on a sample and keep the one that fits the most glyphs. Ties go to the shift
+  // that puts the top of common kanji on row 0, where the official kanji start.
+  render.autoShift = sample => {
+    const tops = [...shiftReference].map(character => inkRows(draw(character))?.top).filter(top => top !== undefined).sort((a, b) => a - b);
+    const aligned = tops.length ? Math.max(-4, Math.min(4, firstRow(0) - tops[tops.length >> 1])) : 0;
+    let best = aligned, bestCount = -1;
+    for (let shift = -4; shift <= 4; shift++) {
+      const count = sample.reduce((sum, [code, width]) => sum + Boolean(render(code, width, shift)), 0);
+      if (count > bestCount || (count === bestCount && Math.abs(shift - aligned) < Math.abs(best - aligned))) {
+        best = shift;
+        bestCount = count;
+      }
+    }
+    return best;
+  };
+  return render;
+}
+
+function glyphBounds(bitmap) {
+  let top = 12, bottom = -1;
+  for (let row = 0; row < 12; row++) {
+    if (!(bitmap[row * 2] || bitmap[row * 2 + 1])) continue;
+    top = Math.min(top, row);
+    bottom = row;
+  }
+  return bottom < 0 ? null : {top, height:bottom - top + 1};
+}
+
+function reshapeGlyph(bitmap, bounds, top, height) {
+  if (!bounds || !Number.isInteger(top) || !Number.isInteger(height) ||
+      top < 0 || height < 1 || top + height > 12) return null;
+  const revised = new Uint8Array(24);
+  for (let row = 0; row < height; row++) {
+    const first = bounds.top + Math.floor(row * bounds.height / height);
+    const end = height >= bounds.height ? first + 1 : bounds.top + Math.ceil((row + 1) * bounds.height / height);
+    for (let original = first; original < end; original++) {
+      revised[(row + top) * 2] |= bitmap[original * 2];
+      revised[(row + top) * 2 + 1] |= bitmap[original * 2 + 1];
+    }
+  }
+  return revised;
+}
+
+function tuneGlyphs(output, original, changed, {auto = false, manual = new Map()} = {}) {
+  const adjusted = [];
+  for (const code of new Set([...changed, ...manual.keys()])) {
+    const offset = fontStart + code * 32;
+    const character = String.fromCharCode(code);
+    const override = manual.get(code);
+    if (!baselineWidth(output.subarray(offset, offset + 32))) {
+      if (override) throw new Error(`${character}はこの調整に対応していない字形です。`);
+      continue;
+    }
+    const normalKana = /^[ぁ-ゖァ-ヺ]$/.test(character) && !"ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ".includes(character);
+    if (!override && !(auto && normalKana && changed.has(code))) continue;
+    const bitmap = output.subarray(offset, offset + 24);
+    const before = glyphBounds(bitmap);
+    const reference = glyphBounds(original.subarray(offset, offset + 24));
+    if (!before || (!override && !reference)) {
+      if (override) throw new Error(`${character}には調整できる点灯ドットがありません。`);
+      continue;
+    }
+    const top = override ? before.top + override.shift : reference.top;
+    const height = override ? override.height || before.height : reference.height;
+    if (!override && Math.abs(before.top - top) < 2 && Math.abs(before.height - height) < 2) continue;
+    const revised = reshapeGlyph(bitmap, before, top, height);
+    if (!revised) throw new Error(`${character}の指定が縦12ドットの範囲を超えます。`);
+    if (sameBytes(bitmap, revised)) continue;
+    output.set(revised, offset);
+    adjusted.push({character, code, mode:override ? "manual" : "auto", before, after:glyphBounds(revised)});
+  }
+  return adjusted;
+}
+
+// Full-screen images in the ROCK26IMAGERES table (128×32, 2 bytes per dot, 0xFFFF unlit).
+// Power-on: resident code at 0x1390 draws 204–239 in order and leaves 239 on screen.
+// Power-off: 0x15036 draws image 1. Favorite heart: 0x143C2/0x14456 step through 167–203 on a timer.
+const screenResource = {table:0x96D37E, width:128, height:32};
+const screenTargets = [
+  {key:"boot", name:"電源ONの起動画面", first:204, last:239, interval:60, verified:true},
+  {key:"powerOff", name:"電源OFFの画面（SEE YOU!）", first:1, last:1, interval:1500, verified:true},
+  {key:"heart", name:"お気に入り登録のアニメーション", first:167, last:203, interval:60, verified:false}
+];
+
+function screenFrames(bytes, target = screenTargets[0]) {
+  const {table, width, height} = screenResource;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (String.fromCharCode(...bytes.subarray(table, table + 14)) !== "ROCK26IMAGERES") throw new Error("画面の画像表が見つかりません。");
+  const frames = [];
+  for (let id = target.first; id <= target.last; id++) {
+    const entry = table + 0x20 + id * 16;
+    const offset = table + view.getUint32(entry + 12, true);
+    if (view.getUint16(entry, true) !== width || view.getUint16(entry + 2, true) !== height ||
+      view.getUint32(entry + 8, true) !== width * height * 2 || offset + width * height * 2 > bytes.length - 4) {
+      throw new Error(`${target.name}の画像形式が一致しません。`);
+    }
+    frames.push({id, offset});
+  }
+  return frames;
+}
+
+function screenFrameBits(bytes, offset) {
+  const bits = new Uint8Array(screenResource.width * screenResource.height);
+  for (let index = 0; index < bits.length; index++) {
+    bits[index] = bytes[offset + index * 2] !== 0xFF || bytes[offset + index * 2 + 1] !== 0xFF ? 1 : 0;
+  }
+  return bits;
+}
+
+function screenBitsFromPixels(rgba, width, height, {threshold = 128, invert = false, sizeOnly = false} = {}) {
+  const {width: screenWidth, height: screenHeight} = screenResource;
+  if (!width || !height) throw new Error("画像が空です。");
+  if (width > screenWidth || height > screenHeight) {
+    throw new Error(`画像は${width}×${height}ピクセルです。画面は${screenWidth}×${screenHeight}ピクセルなので、はみ出さないサイズにしてください。`);
+  }
+  if (sizeOnly) return null;
+  const bits = new Uint8Array(screenWidth * screenHeight);
+  const left = (screenWidth - width) >> 1;
+  const top = (screenHeight - height) >> 1;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = (y * width + x) * 4;
+      if (rgba[pixel + 3] < 128) continue;
+      const light = rgba[pixel] * .299 + rgba[pixel + 1] * .587 + rgba[pixel + 2] * .114;
+      bits[(top + y) * screenWidth + left + x] = (light >= threshold) !== invert ? 1 : 0;
+    }
+  }
+  return bits;
+}
+
+// One image fills every frame; several images play in order and the last one stays.
+function assignFrames(images, count) {
+  if (!images.length) throw new Error("画像がありません。");
+  if (images.length > count) {
+    throw new Error(count === 1 ? `この画面は1枚だけです。画像を1枚選んでください（${images.length}枚）。`
+      : `このアニメーションは${count}コマです。画像は${count}枚以内にしてください（${images.length}枚）。`);
+  }
+  return Array.from({length:count}, (_, index) => images[Math.min(index, images.length - 1)]);
+}
+
+async function buildImage(source, controls, external, tuning, screens = []) {
+  if (source.hash !== stockHash || !source.headersMatch || source.computedCrc !== source.storedCrc) throw new Error("公式V2.0.0 IMGを選んでください。");
+  // `controls` is true for the standard swapped layout, or {swap, reverseWheel, reverseSide}.
+  const settings = controls === true ? {swap:true} : (controls || {});
+  const edits = controlEdits(settings);
+  const swap = Boolean(settings.swap) && !settings.reverseWheel && !settings.reverseSide;
+  if (!edits.length && !external && !screens.length) throw new Error("変更する項目を選んでください。");
+  const output = source.bytes.slice();
+  const changes = [];
+  const changedGlyphs = new Set();
+  let glyphs = 0, fallback = 0, verticalShift = null, shiftAuto = false;
+  if (edits.length) {
+    for (const [offset, before, after] of edits) {
+      if (output[offset] !== before || output[offset + 1] !== 0xD0) throw new Error("操作の変更前バイトが一致しません。");
+      output[offset] = after;
+      changes.push({offset, before, after});
+    }
+  }
+  if (external) {
+    const fromImage = external.kind === "legacy" || external.kind === "cfw";
+    const render = fromImage ? null : rasterizer(external);
+    // TTF only: tuning.verticalShift is an integer from the user, otherwise it is measured from the font.
+    shiftAuto = !Number.isInteger(tuning?.verticalShift);
+    if (!fromImage && shiftAuto) {
+      const candidates = [...external.mapped].filter(code => code >= 0x3040 && baselineWidth(source.bytes.subarray(fontStart + code * 32, fontStart + code * 32 + 32)));
+      const step = Math.max(1, Math.floor(candidates.length / 400));
+      const sample = candidates.filter((_, index) => index % step === 0).slice(0, 400)
+        .map(code => [code, baselineWidth(source.bytes.subarray(fontStart + code * 32, fontStart + code * 32 + 32))]);
+      verticalShift = render.autoShift(sample);
+    } else if (!fromImage) {
+      verticalShift = tuning.verticalShift;
+    }
+    const codes = fromImage ? Array.from({length:0x10000}, (_, code) => code) : external.mapped;
+    for (const code of codes) {
+      if (!fromImage && (code < 0x20 || (code >= 0x7F && code < 0xA0) || (code >= 0xD800 && code <= 0xDFFF))) continue;
+      const offset = fontStart + code * 32;
+      const official = source.bytes.subarray(offset, offset + 32);
+      const width = baselineWidth(official);
+      let bitmap;
+      if (fromImage) {
+        const position = external.start + code * 32;
+        const original = external.bytes.subarray(position, position + 32);
+        if (sameBytes(official, original)) continue;
+        if (!sameBytes(official.subarray(24), original.subarray(24))) throw new Error("フォントのレコード形式が一致しません。");
+        // V1.6 glyphs still need fitting to the advance; V2.0.0 CFW glyphs are already fitted.
+        bitmap = width && (external.kind === "legacy" ? legacyBitmap(original, code, width) : original.subarray(0, 24));
+      } else {
+        bitmap = width && render(code, width, verticalShift);
+      }
+      if (!bitmap) { fallback++; continue; }
+      if (sameBytes(bitmap, official.subarray(0, 24))) continue;
+      output.set(bitmap, offset);
+      glyphs++;
+      changedGlyphs.add(code);
+    }
+    if (!glyphs) throw new Error(fromImage ? "このIMGには入れ替えた字形がありません（操作だけを変えたCFWなど）。フォントを入れ替えたCFWのIMGを選んでください。" : "置き換え可能な字形がありません。");
+  }
+  const adjusted = external ? tuneGlyphs(output, source.bytes, changedGlyphs, tuning) : [];
+  const screenReports = [];
+  for (const screen of screens) {
+    const target = screenTargets.find(item => item.key === screen.key);
+    if (!target || !screen.images?.length) throw new Error("差し替える画面の指定が不正です。");
+    if (screen.images.some(image => image.bits?.length !== screenResource.width * screenResource.height)) throw new Error(`${target.name}のドットデータが不正です。`);
+    const frames = screenFrames(output, target);
+    const assigned = assignFrames(screen.images, frames.length);
+    frames.forEach(({offset}, frame) => assigned[frame].bits.forEach((lit, index) =>
+      output.fill(lit ? 0x00 : 0xFF, offset + index * 2, offset + index * 2 + 2)));
+    screenReports.push({key:target.key, name:target.name, frames:`${target.first}-${target.last}`, frameCount:frames.length,
+      threshold:screen.threshold, invert:screen.invert,
+      images:screen.images.map(({name, sha256, width, height, bits}) => ({name, sha256, size:`${width}x${height}`,
+        litDots:bits.reduce((sum, lit) => sum + lit, 0)}))});
+  }
+  const integrity = inspectIntegrity(output);
+  if (!integrity.headersMatch || !sameBytes(source.bytes.subarray(0,512), output.subarray(0,512))) {
+    throw new Error("複製ヘッダーの検証に失敗しました。");
+  }
+  new DataView(output.buffer).setUint32(output.length - 4, integrity.computedCrc, true);
+  const hash = await sha256(output);
+  if (swap && external?.hash === legacyHash && !adjusted.length && !screens.length && hash !== combinedHash) throw new Error("フォント入替版CFWからの生成結果が既知の出力と一致しません。");
+  return {output, report: {sourceSHA256:source.hash, outputSHA256:hash, crc:crcHex(integrity.computedCrc),
+    controls:changes, controlAssignment:edits.length ? controlAssignment(settings) : null, glyphAdjustments:adjusted, font:external ? {name:external.name, sha256:external.hash, replaced:glyphs, fallback,
+      verticalShift:verticalShift === null ? null : {rows:verticalShift, auto:shiftAuto}} : null,
+    screens:screenReports}};
+}
+
+function previewWidth(code, widthByte) {
+  // Common 12px draw state. See APP-TEST.md for state-dependent cases.
+  if (code > 0xFFFF || (widthByte < 0x80 && widthByte !== 0x10 && widthByte !== 0x20)) return 0;
+  let width = widthByte > 0x80 ? widthByte - 0x80 : 6;
+  if (widthByte === 0x20 || (widthByte === 0x80 && code >= 0x7F)) width = 12;
+  if (code === 0x74 || (code >= 0xE468 && code <= 0xE4A3)) width++;
+  if (code >= 0x1100 && code <= 0x11FF) width = 12;
+  return width;
+}
+
+function layoutPreview(text, bytes) {
+  const glyphs = [];
+  let width = 0, unavailable = 0;
+  for (const character of text) {
+    const code = character.codePointAt(0);
+    const offset = fontStart + code * 32;
+    const advance = previewWidth(code, bytes[offset + 24] ?? 0);
+    if (!advance) {
+      unavailable++;
+      continue;
+    }
+    glyphs.push({x:width, advance, bitmap:bytes.subarray(offset, offset + 24)});
+    width += advance;
+  }
+  return {glyphs, width, unavailable};
+}
+
+function drawPreview(canvas, layout, inverted, titleFrame, scroll = 0) {
+  const context = canvas.getContext("2d");
+  context.fillStyle = inverted ? "#000" : "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = inverted ? "#fff" : "#000";
+  const start = titleFrame ? 19 : 0;
+  const limit = titleFrame ? 127 : canvas.width;
+  const cycle = layout.width + 20;
+  let visible = 0, partial = 0;
+  // The firmware reads a rolling 108-column window from a repeating title buffer.
+  for (const origin of [start - scroll, start - scroll + cycle]) {
+    for (const {x,advance,bitmap} of layout.glyphs) {
+      const left = origin + x;
+      if (left >= limit || left + advance <= start) continue;
+      if (left >= start && left + advance <= limit) visible++;
+      else partial++;
+      for (let row = 0; row < 12; row++) {
+        const bits = bitmap[row*2] * 256 + bitmap[row*2+1];
+        for (let column = Math.max(0, start - left); column < Math.min(advance, 16, limit - left); column++) {
+          if (bits & (0x8000 >>> column)) context.fillRect(left + column, row, 1, 1);
+        }
+      }
+    }
+    if (!scroll) break;
+  }
+  return `表示 ${visible}字` + (partial ? `＋端で一部表示 ${partial}字` : "") +
+    ` · 送り幅 ${layout.width}px / 表示枠 ${limit - start}px` +
+    (layout.unavailable ? ` · 描画なし ${layout.unavailable}字` : "");
+}
+
+function download(data, filename, type) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([data], {type}));
+  link.download = filename;
+  link.click();
+  const url = link.href;
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+async function writeVerifiedCopy(handle, generated) {
+  if ((await handle.getFile()).size !== 0) throw new Error("既存ファイルは上書きできません。空いている保存先を選んでください。");
+  const writable = await handle.createWritable();
+  try {
+    await writable.write(generated.output);
+    await writable.close();
+  } catch (error) {
+    await writable.abort().catch(() => {});
+    throw error;
+  }
+  const saved = new Uint8Array(await (await handle.getFile()).arrayBuffer());
+  if (await sha256(saved) !== generated.report.outputSHA256) {
+    throw new Error("保存したIMGのSHA-256が一致しません。更新には使わないでください。");
+  }
+}
+
+function browserNotice({agent, brands, platform, hasSha, hasFontFace, hasSavePicker}) {
+  const names = brands.map(item => item.brand);
+  let browser = "";
+  if (names.includes("Microsoft Edge") || /Edg(?:A|iOS)?\//.test(agent)) browser = "Microsoft Edge";
+  else if (names.includes("Google Chrome") || (!names.length && /Chrome\//.test(agent) && !/OPR\/|SamsungBrowser\/|Vivaldi\//.test(agent))) browser = "Google Chrome";
+  else if (/Firefox\/|FxiOS\//.test(agent)) browser = "Firefox";
+  else if (/Version\/.*Safari\//.test(agent) && !/CriOS\//.test(agent)) browser = "Safari";
+
+  const mac = platform === "macOS" || /^Mac/.test(platform);
+  const verified = mac && (browser === "Google Chrome" || browser === "Microsoft Edge");
+  const lines = [verified
+    ? `${browser} · Macで動作確認済み`
+    : `${browser || "現在のブラウザ"} · この環境での動作は未確認です。MacのChrome／Edgeで確認済みです。`];
+  if (!hasSha) lines.push("SHA-256を利用できないため、公式IMGの検証とCFW生成は利用できません。");
+  else {
+    if (!hasFontFace) lines.push("TTF／OTFの読み込みは利用できません。操作の入れ替え、画面の差し替え、CFWのIMGからの字形の読み込みは使えます。");
+    if (!hasSavePicker) lines.push("更新用コピーの保存先指定は利用できません。生成後は「IMGを保存」でダウンロードできます。");
+  }
+  return lines.join("\n");
+}
+
+const audioExtension = /\.(?:mp3|flac|wav|m4a|ogg|ape|wma|dsf|dff|opus|aac|alac|aiff?)$/i;
+const ascii = bytes => String.fromCharCode(...bytes);
+
+function titleFromTag(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const decode = (label, value) => new TextDecoder(label).decode(value).replace(/\0.*$/s,"").trim();
+  const syncSafe = offset => bytes.slice(offset,offset+4).reduce((sum,value)=>(sum << 7) + (value & 0x7F),0);
+  if (bytes.length >= 10 && ascii(bytes.subarray(0,3)) === "ID3") {
+    const version = bytes[3];
+    if ((version !== 3 && version !== 4) || (bytes[5] & 0xC0)) return "";
+    const end = Math.min(bytes.length,10 + syncSafe(6));
+    for (let offset=10; offset+10<=end;) {
+      const frame = ascii(bytes.subarray(offset,offset+4));
+      if (!/^[A-Z0-9]{4}$/.test(frame)) return "";
+      const size = version === 4 ? syncSafe(offset+4) : view.getUint32(offset+4);
+      const next = offset+10+size;
+      if (next>end || !size) return "";
+      if (frame === "TIT2" && bytes[offset+9] === 0 && size>1) {
+        const data = bytes.subarray(offset+11,next);
+        switch (bytes[offset+10]) {
+          case 0: return decode("iso-8859-1",data);
+          case 1: return decode(data[0]===0xFE && data[1]===0xFF ? "utf-16be":"utf-16le",data);
+          case 2: return decode("utf-16be",data);
+          case 3: return decode("utf-8",data);
+          default: return "";
+        }
+      }
+      offset = next;
+    }
+  }
+  if (bytes.length >= 8 && ascii(bytes.subarray(0,4)) === "fLaC") {
+    for (let offset=4; offset+4<=bytes.length;) {
+      const kind = bytes[offset];
+      const size = (bytes[offset+1]<<16) | (bytes[offset+2]<<8) | bytes[offset+3];
+      const end = offset+4+size;
+      if (end>bytes.length) return "";
+      if ((kind & 0x7F) === 4 && size>=8) {
+        let field = offset+8+view.getUint32(offset+4,true);
+        if (field+4>end) return "";
+        const count = view.getUint32(field,true);
+        field += 4;
+        for (let index=0; index<count && field+4<=end; index++) {
+          const length=view.getUint32(field,true);
+          field += 4;
+          if (field+length>end) return "";
+          const comment=decode("utf-8",bytes.subarray(field,field+length));
+          if (/^title=/i.test(comment)) return comment.slice(6).trim();
+          field += length;
+        }
+        return "";
+      }
+      if (kind & 0x80) return "";
+      offset=end;
+    }
+  }
+  return "";
+}
+
+async function readSong(file) {
+  const filename = file.name.replace(audioExtension,"");
+  try {
+    const prefix = new Uint8Array(await file.slice(0,256*1024).arrayBuffer());
+    const title = titleFromTag(prefix);
+    return {title:title || filename, filename, tagged:Boolean(title)};
+  } catch {
+    return {title:filename,filename,tagged:false};
+  }
+}
+
+function longKeyBehavior(key, swapped) {
+  if (key === "power") return ["電源ON／OFF","約3秒長押し。フリーズ時は約10秒で強制再起動。"];
+  if (key === "play") return ["一つ戻る","メニューで長押しすると一つ上の画面へ戻ります。"];
+  if (key === "next" || key === "prev") {
+    if (swapped) return [
+      key === "next" ? "Vol. ＋側" : "Vol. −側",
+      "入れ替え後の短押しは音量操作です。長押ししたときの動作は実機未確認です。"
+    ];
+    return [key === "next" ? "早送り" : "早戻し","再生画面・消灯中に長押しします。"];
+  }
+  if (swapped) return [
+    key === "wheel-up" ? "曲送り側" : "曲戻り側",
+    "短押し相当の割り当てに連動した表示です。ホイール回転から早送り・早戻しを呼び出せるかは実機未確認です。"
+  ];
+  return ["回転操作","ホイールのこの位置は回転方向を表します。長押し操作は電源欄を参照してください。"];
+}
+
+// Double presses stay on their physical buttons even when short presses are swapped (confirmed on the device).
+function doubleKeyBehavior(key) {
+  const fixed = "操作を入れ替えても2回押しは変わりません（実機で確認）。";
+  if (key === "power") return ["ロック","電源を2回押すとロック操作になります。"];
+  if (key === "play") return ["再生設定","再生画面では再生設定を開きます。ファイルブラウザでは削除確認を開きます。"];
+  if (key === "next") return ["スペクトラム切替","再生画面の表示モード切り替え（スペクトラム表示を含む）。" + fixed];
+  if (key === "prev") return ["お気に入り","再生中の曲をお気に入りに追加、またはお気に入りから解除します。" + fixed];
+  return ["割り当てなし","ホイール回転に対応する2回押しの割り当ては確認できていません。"];
+}
+
+
+const bodyColors = [
+  ["blue","スカイブルー","#79c0c9"],["black","ブラック","#272a31"],["titanium","チタニウム","#a8a293"],
+  ["green","グリーン","#184c54"],["white","ホワイト","#e6e7e4"],["pink","ピンク","#e9aebd"],["purple","パープル","#552483"]
+];
+
+// Stage is 1000×470 units; the device box spans x 250–980, y 148–322 when upright.
+const deviceBox = {x:250, y:148, width:730, height:174};
+const keyDefs = [
+  {key:"play", name:"再生／停止", stock:"再生／停止", anchor:[.265,-.03], chip:[330,95], place:"top",
+    short:"再生と一時停止、メニューでは決定。"},
+  {key:"next", name:"曲送りボタン", stock:"曲送り", swap:"Vol. ＋", anchor:[.378,-.03], chip:[530,95], place:"top",
+    short:"再生中は次の曲へ、メニューでは項目の移動。"},
+  {key:"prev", name:"曲戻りボタン", stock:"曲戻り", swap:"Vol. −", anchor:[.475,-.03], chip:[730,95], place:"top",
+    short:"再生中は前の曲へ。再生位置が3秒を超えていれば曲の先頭へ。"},
+  {key:"wheel-up", name:"ホイール（＋方向）", stock:"Vol. ＋", swap:"曲送り", anchor:[.064,.75], chip:[225,345], place:"left",
+    short:"回すと音量を上げます。ノブ設定にGlobal Control／Volume Onlyがあります。"},
+  {key:"power", name:"電源ボタン", stock:"Power", anchor:[-.007,.5], chip:[225,235], place:"left",
+    short:"押すと画面の点灯・消灯。"},
+  {key:"wheel-down", name:"ホイール（−方向）", stock:"Vol. −", swap:"曲戻り", anchor:[.064,.25], chip:[225,125], place:"left",
+    short:"回すと音量を下げます。"}
+];
+const mirrorPlace = {top:"bottom", left:"right"};
+
+const pixelIcons = {
+  note:["0000011111","0000111111","0000110001","0000100001","0000100001","0000100001","0111100111","1111101111","1111101111","0111000110"],
+  person:["0001110000","0011111000","0011111000","0001110000","0000100000","0111111100","1111111110","1111111110","1111111110"],
+  play:["1000","1100","1110","1111","1110","1100","1000"],
+  pause:["11011","11011","11011","11011","11011","11011","11011"]
+};
+
+function stageGeometry(def, flipped) {
+  let [cx,cy] = def.chip;
+  let ax = deviceBox.x + deviceBox.width * def.anchor[0];
+  let ay = deviceBox.y + deviceBox.height * def.anchor[1];
+  let place = def.place;
+  if (flipped) {
+    cx = 1000 - cx; cy = 470 - cy; ax = 1000 - ax; ay = 470 - ay;
+    place = mirrorPlace[place];
+  }
+  const vertical = place === "top" || place === "bottom";
+  const path = vertical
+    ? `M${cx} ${cy}V${cy + (ay - cy) * .45}L${ax} ${ay}`
+    : `M${cx} ${cy}H${cx + (ax - cx) * .45}L${ax} ${ay}`;
+  return {cx, cy, place, path};
+}
+
+function init() {
+  const ui = Object.fromEntries([...document.querySelectorAll("[id]")].map(element => [element.id, element]));
+  const radios = name => [...document.querySelectorAll(`input[name="${name}"]`)];
+  const radioValue = name => radios(name).find(input => input.checked)?.value;
+  const setStatus = (element, text, tone = "") => {
+    element.textContent = text;
+    if (tone) element.dataset.tone = tone; else delete element.dataset.tone;
+  };
+  const setChecks = (list, items) => list.replaceChildren(...items.map(([text, tone, detail]) => {
+    const item = document.createElement("li");
+    if (tone) item.dataset.tone = tone;
+    const label = document.createElement("div");
+    label.textContent = text;
+    if (detail) {
+      const extra = document.createElement("span");
+      extra.textContent = " " + detail;
+      label.append(extra);
+    }
+    item.append(label);
+    return item;
+  }));
+
+  const hasSha = typeof globalThis.crypto?.subtle?.digest === "function";
+  ui.browserStatus.textContent = browserNotice({
+    agent: navigator.userAgent,
+    brands: navigator.userAgentData?.brands ?? [],
+    platform: navigator.userAgentData?.platform ?? navigator.platform,
+    hasSha,
+    hasFontFace: typeof globalThis.FontFace === "function",
+    hasSavePicker: typeof window.showSaveFilePicker === "function"
+  });
+  if (/確認済み$/.test(ui.browserStatus.textContent)) ui.browserStatus.dataset.tone = "ok";
+  ui.image.disabled = ui.previewImage.disabled = !hasSha;
+
+  let source, external, generated, previewImage, previewName, previewFromSource = false;
+  let previewSelection = 0, sourceSelection = 0, fontSelection = 0, edit = 0;
+  let staging = false, building = false;
+  const manualGlyphs = new Map();
+  let previewBytes, previewText, layout, previewLabel;
+  let tracks = [], trackIndex = 0, trackSelection = 0;
+  let volume = 50, playing = true, screenOff = false;
+  let scroll = 0, scrollTimer, scrollPaused = false;
+  let gesture = "short", selectedKey = "next";
+  let booting, bootTimer;
+  const screens = [];
+  const titleCanvas = Object.assign(document.createElement("canvas"), {width:128, height:12});
+  const textCanvas = Object.assign(document.createElement("canvas"), {width:128, height:12});
+
+  // Body colour swatches
+  for (const [value, label, color] of bodyColors) {
+    const wrapper = document.createElement("label");
+    wrapper.title = label;
+    wrapper.innerHTML = `<input type="radio" name="bodyColor" value="${value}" aria-label="${label}"${value === "blue" ? " checked" : ""}><span style="--swatch:${color}"></span>`;
+    ui.colorSwatches.append(wrapper);
+  }
+  for (const input of radios("bodyColor")) input.addEventListener("change", () => {
+    ui.keyDevice.dataset.color = input.value;
+  });
+
+  // Callouts around the device
+  const callouts = new Map();
+  const leaders = new Map();
+  for (const def of keyDefs) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "callout";
+    button.dataset.key = def.key;
+    button.addEventListener("click", () => selectKey(def.key));
+    ui.keyStage.append(button);
+    callouts.set(def.key, button);
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    ui.keyLines.append(path);
+    leaders.set(def.key, path);
+  }
+
+  const controlSettings = () => ({swap:ui.swapControls.checked, reverseWheel:ui.reverseWheel.checked, reverseSide:ui.reverseSide.checked});
+  const controlsChanged = () => Object.values(controlSettings()).some(Boolean);
+  const functionLabel = {next:"曲送り", prev:"曲戻り", "vol+":"Vol. ＋", "vol-":"Vol. −"};
+  const controlKeyNames = {"wheel-up":"ホイール＋", "wheel-down":"ホイール−", next:"曲送りボタン", prev:"曲戻りボタン"};
+  const partnerKey = {"wheel-up":"wheel-down", "wheel-down":"wheel-up", next:"prev", prev:"next"};
+
+  // Long-press labels follow the swap; a reversed pair shows its partner's label. Double presses never move.
+  function keyBehavior(key, settings) {
+    if (gesture === "double") return doubleKeyBehavior(key);
+    const reversed = key.startsWith("wheel") ? settings.reverseWheel : key in partnerKey && settings.reverseSide;
+    const [label, text] = longKeyBehavior(reversed ? partnerKey[key] : key, Boolean(settings.swap));
+    return reversed ? [label, text + "向きを逆にした場合の動作は実機未確認です。"] : [label, text];
+  }
+
+  function keyLabelFor(def, settings) {
+    if (gesture !== "short") return keyBehavior(def.key, settings)[0];
+    return def.key in controlSites ? functionLabel[controlAssignment(settings)[def.key]] : def.stock;
+  }
+
+  const keyLabel = def => keyLabelFor(def, controlSettings());
+
+  function layoutCallouts() {
+    const flipped = ui.keyStage.dataset.orientation === "inverted";
+    for (const def of keyDefs) {
+      const {cx, cy, place, path} = stageGeometry(def, flipped);
+      const button = callouts.get(def.key);
+      button.style.left = cx / 10 + "%";
+      button.style.top = cy / 4.7 + "%";
+      button.dataset.place = place;
+      leaders.get(def.key).setAttribute("d", path);
+    }
+  }
+
+  function updateKeymap() {
+    const settings = controlSettings();
+    const changedControls = controlsChanged();
+    for (const def of keyDefs) {
+      const button = callouts.get(def.key);
+      const label = keyLabel(def);
+      button.textContent = label;
+      button.setAttribute("aria-label", `${def.name}：${label}`);
+      button.setAttribute("aria-pressed", String(def.key === selectedKey));
+      leaders.get(def.key).classList.toggle("active", def.key === selectedKey);
+      button.toggleAttribute("data-changed", label !== keyLabelFor(def, {}));
+      const description = gesture === "short" ? "" : keyBehavior(def.key, settings)[1];
+      button.toggleAttribute("data-unverified", changedControls && /未確認/.test(description));
+    }
+    for (const part of ui.keyDevice.querySelectorAll("[data-press]")) {
+      part.toggleAttribute("data-active", part.dataset.press === selectedKey);
+    }
+    const assignment = controlAssignment(settings);
+    for (const [key, cell] of [["wheel-up", ui.mapWheelUp], ["wheel-down", ui.mapWheelDown], ["next", ui.mapSideNext], ["prev", ui.mapSidePrev]]) {
+      cell.textContent = functionLabel[assignment[key]];
+      cell.classList.toggle("changed", assignment[key] !== controlSites[key].stock);
+    }
+    ui.controlOption.toggleAttribute("data-changed", changedControls);
+    renderInfo();
+  }
+
+  function renderInfo() {
+    const def = keyDefs.find(item => item.key === selectedKey);
+    const settings = controlSettings();
+    const gestureName = {short:"短押し", long:"長押し", double:"2回押し"}[gesture];
+    let title, text;
+    if (gesture === "short") {
+      const now = keyLabelFor(def, settings);
+      title = `${def.name} · ${gestureName} → ${now}`;
+      text = now !== def.stock
+        ? `公式では「${def.stock}」。変更後は「${now}」になります。再生画面での操作です。ノブ設定・消灯中の動作は実機未確認です。`
+        : def.short;
+    } else {
+      const [label, description] = keyBehavior(def.key, settings);
+      title = `${def.name} · ${gestureName} → ${label}`;
+      text = description;
+    }
+    const heading = document.createElement("b");
+    heading.textContent = title;
+    const body = document.createElement("p");
+    body.textContent = text;
+    ui.keyInfo.replaceChildren(heading, body);
+  }
+
+  function selectKey(key) {
+    selectedKey = key;
+    updateKeymap();
+  }
+
+  // Simulated presses on the device drawing
+  function flash(part) {
+    part.setAttribute("data-flash", "");
+    setTimeout(() => part.removeAttribute("data-flash"), 160);
+  }
+
+  function press(key, part) {
+    flash(part);
+    selectKey(key);
+    if (gesture !== "short") {
+      const [label] = keyBehavior(key, controlSettings());
+      ui.simStatus.textContent = `${{long:"長押し", double:"2回押し"}[gesture]}：${label}`;
+      return;
+    }
+    if (key === "power") {
+      screenOff = !screenOff;
+      ui.simStatus.textContent = screenOff ? "画面を消灯" : "画面を点灯";
+      renderPreview();
+      return;
+    }
+    if (screenOff) {
+      screenOff = false;
+      ui.simStatus.textContent = "画面を点灯（消灯中の最初の操作の扱いは実機未確認）";
+      renderPreview();
+      return;
+    }
+    if (key === "play") {
+      playing = !playing;
+      ui.simStatus.textContent = playing ? "再生" : "一時停止";
+      renderPreview();
+      return;
+    }
+    const action = controlAssignment(controlSettings())[key];
+    const step = action === "next" || action === "vol+" ? 1 : -1;
+    if (action === "next" || action === "prev") {
+      if (tracks.length) selectTrack(trackIndex + step);
+      ui.simStatus.textContent = (step > 0 ? "曲送り" : "曲戻し") + (tracks.length ? "" : "（曲を選ぶと曲名が切り替わります）");
+    } else {
+      volume = Math.max(0, Math.min(100, volume + step));
+      ui.simStatus.textContent = `音量 ${volume}`;
+      renderPreview();
+    }
+  }
+  for (const part of ui.keyDevice.querySelectorAll("[data-press]")) {
+    part.addEventListener("click", () => press(part.dataset.press, part));
+  }
+
+  for (const input of radios("gesture")) input.addEventListener("change", () => {
+    gesture = input.value;
+    updateKeymap();
+  });
+  for (const input of radios("orientation")) input.addEventListener("change", () => {
+    ui.keyStage.dataset.orientation = input.value;
+    layoutCallouts();
+  });
+
+  // OLED and title strip
+  function blitIcon(context, rows, x, y) {
+    rows.forEach((row, dy) => [...row].forEach((bit, dx) => {
+      if (bit === "1") context.fillRect(x + dx, y + dy, 1, 1);
+    }));
+  }
+
+  function drawText(context, text, bytes, x, y) {
+    const textLayout = layoutPreview(text, bytes);
+    drawPreview(textCanvas, textLayout, true, false);
+    const width = Math.min(textLayout.width, 128 - x);
+    if (width > 0) context.drawImage(textCanvas, 0, 0, width, 12, x, y, width, 12);
+    return textLayout.width;
+  }
+
+  function paintBits(context, bits, top = 0) {
+    context.fillStyle = "#fff";
+    bits?.forEach((lit, index) => {
+      if (lit) context.fillRect(index % screenResource.width, top + Math.floor(index / screenResource.width), 1, 1);
+    });
+  }
+
+  function paintScreenCanvas(canvas, bits) {
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#000";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    paintBits(context, bits);
+  }
+
+  function drawOled() {
+    const context = ui.keyScreen.getContext("2d");
+    context.fillStyle = "#000";
+    context.fillRect(0, 0, 128, 40);
+    if (booting) {
+      paintBits(context, booting.frames[booting.index], 4);
+      return;
+    }
+    if (screenOff) return;
+    context.fillStyle = "#fff";
+    if (!layout) {
+      context.font = "9px sans-serif";
+      context.fillText("公式IMGを読み込むと", 6, 17);
+      context.fillText("実機の字形で表示します", 6, 30);
+      return;
+    }
+    drawPreview(titleCanvas, layout, true, true, scroll);
+    context.drawImage(titleCanvas, 19, 0, 108, 12, 19, 0, 108, 12);
+    context.fillStyle = "#fff";
+    blitIcon(context, pixelIcons.note, 5, 1);
+    blitIcon(context, pixelIcons.person, 5, 15);
+    drawText(context, tracks.length ? `${String(trackIndex + 1).padStart(3, "0")}/${String(tracks.length).padStart(3, "0")}` : "SAMPLE", previewBytes, 19, 14);
+    blitIcon(context, playing ? pixelIcons.play : pixelIcons.pause, 6, 30);
+    drawText(context, `VOL ${volume}`, previewBytes, 19, 28);
+    const tag = controlsChanged() ? "SWAP" : "STOCK";
+    const width = layoutPreview(tag, previewBytes).width;
+    drawText(context, tag, previewBytes, 127 - width, 28);
+  }
+
+  // Titles wider than the 108px frame scroll on their own, as on the device; the button only pauses.
+  function updateScrollButton() {
+    const label = !layout ? "スクロール（公式IMGが必要）" : ui.scrollTitle.disabled ? "スクロールなし（枠内に収まる）"
+      : scrollPaused ? "スクロールを再開" : "スクロールを一時停止";
+    ui.scrollTitle.textContent = label;
+    ui.scrollTitle.setAttribute("aria-pressed", String(scrollPaused && !ui.scrollTitle.disabled));
+  }
+
+  function stopScroll(reset = false) {
+    clearInterval(scrollTimer);
+    scrollTimer = undefined;
+    if (reset) scroll = 0;
+  }
+
+  function startScroll() {
+    if (scrollTimer !== undefined) return;
+    scrollTimer = setInterval(() => {
+      scroll = (scroll + 1) % (layout.width + 20);
+      renderPreview();
+    }, 45);
+  }
+
+  function renderPreview() {
+    const titleFrame = radioValue("previewFrame") === "title";
+    const canScroll = layout?.width > 108;
+    ui.scrollTitle.disabled = !canScroll;
+    if (!canScroll) stopScroll(true);
+    else if (!scrollPaused) startScroll();
+    updateScrollButton();
+    if (layout) {
+      setStatus(ui.previewStatus, previewLabel + drawPreview(ui.preview, layout, !ui.previewLight.checked, titleFrame, titleFrame ? scroll : 0));
+    } else {
+      // Without the official IMG there are no device glyphs; show the title in a system font as a stand-in.
+      const context = ui.preview.getContext("2d");
+      const light = ui.previewLight.checked;
+      context.fillStyle = light ? "#fff" : "#000";
+      context.fillRect(0, 0, ui.preview.width, ui.preview.height);
+      context.fillStyle = light ? "#000" : "#fff";
+      context.font = "10px sans-serif";
+      context.textBaseline = "middle";
+      context.fillText(ui.sample.value, titleFrame ? 19 : 0, 6.5);
+      setStatus(ui.previewStatus, "仮の表示です。手順1で公式IMGを読み込むと、本体の12ドット字形で表示し、長い曲名はスクロールします。");
+    }
+    drawOled();
+  }
+
+  function drawSingle(canvas, bytes, code) {
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#000";
+    context.fillRect(0,0,16,12);
+    if (!bytes || !Number.isInteger(code)) return;
+    const offset = fontStart + code * 32;
+    const width = Math.min(16, previewWidth(code, bytes[offset + 24]));
+    context.fillStyle = "#fff";
+    for (let row = 0; row < 12; row++) {
+      const bits = bytes[offset+row*2]*256 + bytes[offset+row*2+1];
+      for (let column = 0; column < width; column++) {
+        if (bits & (0x8000 >>> column)) context.fillRect(column,row,1,1);
+      }
+    }
+  }
+
+  function refreshGlyphChoices() {
+    const previous = ui.glyphChoice.value;
+    const choices = new Set([...ui.sample.value].filter(char => char.trim() && char.codePointAt(0)<=0xFFFF));
+    for (const code of manualGlyphs.keys()) choices.add(String.fromCharCode(code));
+    ui.glyphChoice.replaceChildren(...[...choices].map(char => {
+      const option = document.createElement("option");
+      const code = char.charCodeAt(0);
+      option.value = String(code);
+      option.textContent = `${char} · U+${code.toString(16).toUpperCase().padStart(4,"0")}` + (manualGlyphs.has(code) ? " · 調整済み" : "");
+      return option;
+    }));
+    if ([...ui.glyphChoice.options].some(option => option.value === previous)) ui.glyphChoice.value = previous;
+    loadGlyphSettings();
+  }
+
+  function loadGlyphSettings() {
+    const entry = manualGlyphs.get(Number(ui.glyphChoice.value));
+    ui.glyphShift.value = entry?.shift ?? 0;
+    ui.glyphHeight.value = entry?.height ?? 0;
+  }
+
+  function refreshGlyphAdjustment() {
+    const code = ui.glyphChoice.value ? Number(ui.glyphChoice.value) : undefined;
+    ui.glyphControls.disabled = !source || !external || !ui.useFont.checked;
+    ui.applyGlyph.disabled = code === undefined;
+    ui.removeGlyph.disabled = code === undefined || !manualGlyphs.has(code);
+    drawSingle(ui.officialGlyph, source?.bytes, code);
+    drawSingle(ui.resultGlyph, generated?.output, code);
+  }
+
+  function generateBlocker() {
+    if (!source) return "公式V2.0.0のIMGを読み込むと生成できます。";
+    if (!controlsChanged() && !ui.useFont.checked && !screens.some(screen => screen.use.checked)) {
+      return "変更する内容を1つ以上オンにしてください。本体をすべて公式に戻すときは、手順1で保存した公式IMGの控えを書き込みます。";
+    }
+    if (ui.useFont.checked && !external) return "フォントファイルを選んでください。";
+    for (const screen of screens.filter(item => item.use.checked)) {
+      if (!screen.images.length) return `「${screen.target.name}」の画像を選んでください。`;
+      if (!screen.confirmed) return `「${screen.target.name}」のドット表示を確認して「この表示で決定」を押してください。`;
+    }
+    return "";
+  }
+
+  // Replaceable screens: one card per target, built from the template
+  const frameCount = target => target.last - target.first + 1;
+  const screenSettings = screen => ({threshold:screen.threshold.valueAsNumber, invert:screen.invert.checked});
+
+  function convertScreen(screen) {
+    screen.confirmed = false;
+    screen.bits = screen.images.map(image => screenBitsFromPixels(image.rgba, image.width, image.height, screenSettings(screen)));
+  }
+
+  function screenPlayback(screen) {
+    const custom = screen.use.checked && screen.bits.length;
+    return custom ? assignFrames(screen.bits, frameCount(screen.target)) : screen.official;
+  }
+
+  function refreshScreen(screen) {
+    const count = frameCount(screen.target);
+    const frame = Math.min(count, screen.frame.valueAsNumber) - 1;
+    paintScreenCanvas(screen.officialCanvas, screen.official?.[frame]);
+    paintScreenCanvas(screen.resultCanvas, screen.bits.length ? assignFrames(screen.bits, count)[frame] : undefined);
+    screen.frameValue.textContent = `${frame + 1} / ${count}（${screen.target.first + frame}番）`;
+    screen.file.disabled = !screen.use.checked;
+    screen.controls.disabled = !screen.use.checked || !screen.images.length;
+    screen.thresholdValue.textContent = screen.threshold.value;
+    screen.confirmButton.disabled = screen.confirmed;
+    screen.confirmButton.textContent = screen.confirmed ? "決定済み" : "この表示で決定";
+    screen.png.disabled = !screen.confirmed;
+    screen.play.disabled = Boolean(booting) || !screenPlayback(screen);
+  }
+
+  function refreshScreens() {
+    screens.forEach(refreshScreen);
+    ui.bootPlay.disabled = Boolean(booting) || !screenPlayback(screens[0]);
+  }
+
+  function playScreen(screen) {
+    const frames = screenPlayback(screen);
+    if (!frames) return;
+    clearInterval(bootTimer);
+    booting = {frames, index:0, hold:0};
+    screenOff = false;
+    ui.simStatus.textContent = `${screen.target.name} · ${screen.use.checked && screen.bits.length ? "差し替え後" : "公式"}`;
+    refreshScreens();
+    drawOled();
+    // Frame pacing is approximate; the firmware waits 0x19 ticks per boot frame.
+    const holdTicks = frames.length > 1 ? 12 : 1;
+    bootTimer = setInterval(() => {
+      if (booting.index < frames.length - 1) {
+        booting.index++;
+      } else if (++booting.hold > holdTicks) {
+        clearInterval(bootTimer);
+        booting = undefined;
+        refreshScreens();
+      }
+      drawOled();
+    }, screen.target.interval);
+  }
+
+  async function decodeImageFile(file, maxFrames) {
+    // Animated GIF/WebP frames need ImageDecoder (Chrome/Edge); elsewhere only the first frame is read.
+    const animated = /^image\/(gif|webp)$/.test(file.type);
+    const bitmaps = [];
+    if (typeof ImageDecoder === "function" && animated) {
+      const decoder = new ImageDecoder({data:await file.arrayBuffer(), type:file.type});
+      try {
+        await decoder.tracks.ready;
+        const total = decoder.tracks.selectedTrack?.frameCount || 1;
+        assignFrames(Array(total).fill(0), maxFrames);
+        for (let index = 0; index < total; index++) bitmaps.push((await decoder.decode({frameIndex:index})).image);
+      } finally {
+        decoder.close();
+      }
+    } else {
+      bitmaps.push(await createImageBitmap(file).catch(() => { throw new Error(`${file.name} を画像として読み込めません。PNGなどを選んでください。`); }));
+    }
+    try {
+      // Reject oversized images before allocating a canvas for them.
+      for (const bitmap of bitmaps) screenBitsFromPixels(null, bitmap.displayWidth ?? bitmap.width, bitmap.displayHeight ?? bitmap.height, {sizeOnly:true});
+      const hash = await sha256(new Uint8Array(await file.arrayBuffer()));
+      return bitmaps.map((bitmap, index) => {
+        const width = bitmap.displayWidth ?? bitmap.width, height = bitmap.displayHeight ?? bitmap.height;
+        const canvas = Object.assign(document.createElement("canvas"), {width, height});
+        const context = canvas.getContext("2d", {willReadFrequently:true});
+        context.drawImage(bitmap, 0, 0);
+        const name = bitmaps.length > 1 ? `${file.name}#${index + 1}` : file.name;
+        return {name, sha256:hash, width, height, rgba:context.getImageData(0, 0, width, height).data,
+          firstFrameOnly:animated && typeof ImageDecoder !== "function"};
+      });
+    } finally {
+      bitmaps.forEach(bitmap => bitmap.close());
+    }
+  }
+
+  function createScreen(target) {
+    const card = ui.screenTemplate.content.firstElementChild.cloneNode(true);
+    const role = name => card.querySelector(`[data-role="${name}"]`);
+    const count = frameCount(target);
+    const screen = {target, images:[], bits:[], confirmed:false, selection:0, official:undefined,
+      use:role("use"), file:role("file"), status:role("status"), officialCanvas:role("official"), resultCanvas:role("result"),
+      frame:role("frame"), frameValue:role("frameValue"), play:role("play"), controls:role("controls"),
+      threshold:role("threshold"), thresholdValue:role("thresholdValue"), invert:role("invert"),
+      confirmButton:role("confirm"), png:role("png")};
+    role("title").textContent = target.name + "の差し替え";
+    role("summary").textContent = (count > 1
+      ? `${count}コマのアニメーションを替えます。画像1枚なら全コマに同じ画像、複数枚やアニメーションGIFなら順に表示して最後の1枚を残します。`
+      : "1枚の画面を替えます。") + "画像は128×32ピクセル以内にしてください。";
+    role("note").textContent = (target.verified ? "" : "曲をお気に入りに登録したときに表示されるアニメーションです（実機未確認）。") +
+      (count > 1 ? "複数の画像はファイル名の順に並べます。" : "");
+    screen.file.multiple = count > 1;
+    screen.file.setAttribute("aria-label", `${target.name}の画像（128×32ピクセル以内）`);
+    screen.officialCanvas.setAttribute("aria-label", `公式の${target.name}`);
+    screen.resultCanvas.setAttribute("aria-label", `変換後の${target.name}`);
+    screen.frame.max = String(count);
+    screen.frame.value = String(count);
+    role("frameField").hidden = count === 1;
+
+    screen.use.addEventListener("change", invalidate);
+    screen.file.addEventListener("change", async () => {
+      const ticket = ++screen.selection;
+      screen.images = [];
+      convertScreen(screen);
+      invalidate();
+      const files = [...screen.file.files].sort((a, b) => a.name.localeCompare(b.name, "ja", {numeric:true}));
+      setStatus(screen.status, files.length ? "画像を読み込み中…" : "", "busy");
+      if (!files.length) return;
+      try {
+        const images = [];
+        for (const file of files) images.push(...await decodeImageFile(file, count));
+        images.forEach(image => screenBitsFromPixels(image.rgba, image.width, image.height));
+        assignFrames(images, count);
+        if (ticket !== screen.selection) return;
+        screen.images = images;
+        convertScreen(screen);
+        const sizes = [...new Set(images.map(image => `${image.width}×${image.height}`))].join("・");
+        const centered = images.some(image => image.width < screenResource.width || image.height < screenResource.height) ? "（中央に配置）" : "";
+        const spread = count === 1 ? "" : images.length === 1 ? ` · 全${count}コマに同じ画像` :
+          images.length < count ? ` · ${images.length}コマ目以降は最後の画像を表示` : ` · ${count}コマ`;
+        const firstOnly = images.some(image => image.firstFrameOnly) ? "\nこのブラウザではアニメーションGIF／WebPの最初のコマだけを読み込みます。" : "";
+        setStatus(screen.status, `画像 ${images.length}枚 · ${sizes}ピクセル${centered}${spread}\nドット表示を確認して「この表示で決定」を押してください。${firstOnly}`, "ok");
+      } catch (error) {
+        if (ticket === screen.selection) setStatus(screen.status, "この画像は使えません。" + error.message, "error");
+      } finally {
+        if (ticket === screen.selection) refresh();
+      }
+    });
+    for (const input of [screen.threshold, screen.invert]) input.addEventListener("input", () => {
+      convertScreen(screen);
+      invalidate();
+    });
+    screen.frame.addEventListener("input", () => refreshScreen(screen));
+    screen.confirmButton.addEventListener("click", () => {
+      screen.confirmed = true;
+      setStatus(screen.status, `画像 ${screen.images.length}枚 · この表示で決定しました。生成時に${target.name}へ書き込みます。`, "ok");
+      refresh();
+    });
+    screen.png.addEventListener("click", () => {
+      const {width, height} = screenResource;
+      const canvas = Object.assign(document.createElement("canvas"), {width, height:height * screen.bits.length});
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#000";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      screen.bits.forEach((bits, index) => paintBits(context, bits, index * height));
+      const base = screen.images[0].name.replace(/#\d+$/, "").replace(/\.[^.]+$/, "");
+      const name = `${base}-128x32${screen.bits.length > 1 ? `x${screen.bits.length}` : ""}.png`;
+      canvas.toBlob(blob => download(blob, name, "image/png"), "image/png");
+    });
+    screen.play.addEventListener("click", () => playScreen(screen));
+    ui.screenOptions.append(card);
+    return screen;
+  }
+  screens.push(...screenTargets.map(createScreen));
+
+  function refresh() {
+    ui.font.disabled = !ui.useFont.checked;
+    ui.verticalShift.disabled = !ui.useFont.checked || !external?.face;
+    ui.backup.disabled = !source;
+    ui.clearPreviewImage.disabled = !ui.previewImage.files.length;
+    const blocker = generateBlocker();
+    ui.generate.disabled = building || Boolean(blocker);
+    ui.generate.textContent = building ? "生成中…" : generated ? "CFWを再生成" : "CFWを生成";
+    setStatus(ui.generateHint, blocker || (generated || building ? "" : "準備ができました。生成はブラウザ内で行います。"), blocker ? "" : "ok");
+    ui.save.disabled = ui.report.disabled = !generated;
+    ui.stage.disabled = staging || !generated || typeof window.showSaveFilePicker !== "function";
+    ui.step1.dataset.state = source ? "done" : "ready";
+    ui.step2.dataset.state = source && !blocker ? "done" : source ? "ready" : "";
+    ui.step3.dataset.state = generated ? "done" : source && !blocker ? "ready" : "";
+    // A CFW chosen as the font is previewed with its own glyphs before generating.
+    const fontCfw = ui.useFont.checked && (external?.kind === "cfw" || external?.kind === "legacy") ? external : undefined;
+    if (fontCfw && fontCfw.previewBase !== source) {
+      fontCfw.preview = fontPreviewBytes(fontCfw, source?.bytes);
+      fontCfw.previewBase = source;
+    }
+    const bytes = previewImage ?? generated?.output ?? fontCfw?.preview ?? source?.bytes;
+    const text = ui.sample.value;
+    previewLabel = previewImage ? `${previewName ?? "保存済みIMG"} · ` : generated ? "生成後 · " : fontCfw ? `${fontCfw.name}の字形 · ` : "公式字形 · ";
+    if (bytes !== previewBytes || text !== previewText) {
+      stopScroll(true);
+      previewBytes = bytes;
+      previewText = text;
+      layout = bytes ? layoutPreview(text, bytes) : undefined;
+    }
+    renderPreview();
+    refreshGlyphAdjustment();
+    refreshScreens();
+  }
+
+  function invalidate() {
+    edit++;
+    generated = undefined;
+    setStatus(ui.result, "");
+    ui.resultChecks.replaceChildren();
+    ui.resultHash.hidden = true;
+    refresh();
+  }
+
+  // Step 1: official image
+  ui.image.addEventListener("change", async () => {
+    const ticket = ++sourceSelection;
+    source = undefined;
+    if (previewFromSource) previewImage = previewName = undefined;
+    previewFromSource = false;
+    for (const screen of screens) screen.official = undefined;
+    ui.sourceChecks.replaceChildren();
+    invalidate();
+    const file = ui.image.files[0];
+    setStatus(ui.sourceStatus, file ? `${file.name} を検証中…` : "", "busy");
+    if (!file) return;
+    try {
+      const inspected = await inspect(file);
+      if (ticket !== sourceSelection) return;
+      // A CFW made earlier can't be the base for generating, but its glyphs can be previewed.
+      const stamp = toHex(inspected.bytes.subarray(0, 10));
+      const cfwVersion = !inspected.version && inspected.headersMatch && inspected.hash !== v16Hash &&
+        (stamp === stockStamp ? "V2.0.0" : stamp === v16Stamp ? "V1.6" : "");
+      const checks = [
+        [`サイズ ${inspected.bytes.length.toLocaleString()}バイト`, ""],
+        [inspected.version ? "公式V2.0.0のSHA-256と一致" : cfwVersion ? `${cfwVersion}用のCFW（公式とは別のファイル）` : "公式V2.0.0のSHA-256と不一致",
+          inspected.version ? "" : cfwVersion ? "warn" : "error"],
+        [inspected.headersMatch ? "複製ヘッダー一致" : "複製ヘッダー不一致", inspected.headersMatch ? "" : "error"],
+        [`末尾CRC ${crcHex(inspected.storedCrc)}` + (inspected.computedCrc === inspected.storedCrc ? " 一致" : ` 不一致（計算値 ${crcHex(inspected.computedCrc)}）`),
+          inspected.computedCrc === inspected.storedCrc ? "" : "error"]
+      ];
+      setChecks(ui.sourceChecks, checks);
+      if (cfwVersion) {
+        previewImage = cfwVersion === "V2.0.0" ? inspected.bytes : fontPreviewBytes({kind:"legacy", bytes:inspected.bytes, start:legacyStart});
+        previewFromSource = true;
+        previewName = file.name;
+        setStatus(ui.sourceStatus, `${file.name} · ${cfwVersion}用のCFWです。曲名のプレビューはこのIMGの字形で表示します。\nCFWを生成するには、公式V2.0.0のIMGを読み込んでください。`, "ok");
+        return;
+      }
+      if (!inspected.version || !inspected.headersMatch || inspected.computedCrc !== inspected.storedCrc) {
+        throw new Error("公式V2.0.0 IMGとして使えません。FiiOから入手した未改変のファイルを選んでください。");
+      }
+      for (const screen of screens) {
+        screen.official = screenFrames(inspected.bytes, screen.target).map(frame => screenFrameBits(inspected.bytes, frame.offset));
+      }
+      source = inspected;
+      setStatus(ui.sourceStatus, `${file.name} · 公式V2.0.0として確認しました`, "ok");
+    } catch (error) {
+      if (ticket === sourceSelection) setStatus(ui.sourceStatus, error.message, "error");
+    } finally {
+      if (ticket === sourceSelection) refresh();
+    }
+  });
+  for (const type of ["dragenter", "dragover"]) ui.imageDrop.addEventListener(type, event => {
+    event.preventDefault();
+    ui.imageDrop.dataset.drag = "";
+  });
+  for (const type of ["dragleave", "drop"]) ui.imageDrop.addEventListener(type, () => delete ui.imageDrop.dataset.drag);
+  ui.imageDrop.addEventListener("drop", event => {
+    event.preventDefault();
+    if (!event.dataTransfer?.files.length || ui.image.disabled) return;
+    ui.image.files = event.dataTransfer.files;
+    ui.image.dispatchEvent(new Event("change"));
+  });
+  ui.backup.addEventListener("click", () => download(source.bytes, "NANOV200-official-backup.IMG", "application/octet-stream"));
+
+  // Step 2: changes
+  for (const input of [ui.swapControls, ui.reverseWheel, ui.reverseSide]) input.addEventListener("change", () => {
+    updateKeymap();
+    invalidate();
+  });
+  ui.useFont.addEventListener("change", () => {
+    if (ui.useFont.checked && !external) ui.glyphDetails.open = false;
+    invalidate();
+  });
+  ui.font.addEventListener("change", async () => {
+    const ticket = ++fontSelection;
+    if (external?.face) document.fonts.delete(external.face);
+    external = undefined;
+    invalidate();
+    const file = ui.font.files[0];
+    setStatus(ui.fontStatus, file ? `${file.name} を読み込み中…` : "", "busy");
+    if (!file) return;
+    try {
+      const loaded = await loadExternal(file);
+      if (ticket !== fontSelection) return;
+      if (loaded.face) document.fonts.add(loaded.face);
+      external = loaded;
+      setStatus(ui.fontStatus, loaded.name + (loaded.mapped ? ` · Unicode文字 ${loaded.mapped.size.toLocaleString()}件` : ` · ${loaded.version}用CFWのIMGから字形を読み込みます` +
+        (loaded.crcMismatch ? "\n末尾CRCが格納値と一致しません（以前のCFWでは更新されていないことがあります）。字形をプレビューで確認してください。" : "")), "ok");
+    } catch (error) {
+      if (ticket === fontSelection) setStatus(ui.fontStatus, "フォントを読み込めません。" + error.message, "error");
+    } finally {
+      if (ticket === fontSelection) refresh();
+    }
+  });
+  ui.verticalShift.addEventListener("change", invalidate);
+  ui.autoGlyphs.addEventListener("change", () => {
+    invalidate();
+    setStatus(ui.glyphStatus, "「CFWを生成」で補正結果を確認できます。");
+  });
+  ui.glyphChoice.addEventListener("change", () => {
+    loadGlyphSettings();
+    refreshGlyphAdjustment();
+  });
+  ui.applyGlyph.addEventListener("click", () => {
+    const shift = ui.glyphShift.valueAsNumber;
+    const height = ui.glyphHeight.valueAsNumber;
+    if (!ui.glyphShift.checkValidity() || !ui.glyphHeight.checkValidity() || !Number.isInteger(shift) || !Number.isInteger(height)) {
+      setStatus(ui.glyphStatus, "上下移動と高さを指定範囲の整数で入力してください。", "error");
+      return;
+    }
+    manualGlyphs.set(Number(ui.glyphChoice.value), {shift,height});
+    refreshGlyphChoices();
+    invalidate();
+    setStatus(ui.glyphStatus, "個別調整を登録しました。「CFWを生成」で反映します。");
+  });
+  ui.removeGlyph.addEventListener("click", () => {
+    manualGlyphs.delete(Number(ui.glyphChoice.value));
+    refreshGlyphChoices();
+    invalidate();
+    setStatus(ui.glyphStatus, "個別調整を解除しました。");
+  });
+
+  ui.bootPlay.addEventListener("click", () => playScreen(screens[0]));
+  ui.resetAll.addEventListener("click", () => {
+    for (const input of [ui.swapControls, ui.reverseWheel, ui.reverseSide, ui.useFont, ui.autoGlyphs]) input.checked = false;
+    ui.verticalShift.value = "auto";
+    for (const screen of screens) {
+      screen.use.checked = screen.invert.checked = false;
+      screen.threshold.value = "128";
+      convertScreen(screen);
+      if (screen.images.length) setStatus(screen.status, "初期値に戻しました。もう一度オンにすると、読み込んだ画像を使えます。");
+    }
+    manualGlyphs.clear();
+    refreshGlyphChoices();
+    updateKeymap();
+    invalidate();
+    ui.resetStatus.textContent = "すべて初期値（公式）に戻しました。";
+  });
+  ui.step2.addEventListener("change", () => { ui.resetStatus.textContent = ""; });
+
+  // Title preview
+  function selectTrack(index) {
+    if (!tracks.length) return;
+    trackIndex = (index + tracks.length) % tracks.length;
+    const track = tracks[trackIndex];
+    ui.songPick.value = String(trackIndex);
+    ui.sample.value = track.title.slice(0,100);
+    setStatus(ui.songStatus, `${trackIndex+1} / ${tracks.length}曲 · ${track.tagged ? "タイトルタグ" : "ファイル名"}`);
+    refreshGlyphChoices();
+    refresh();
+  }
+
+  async function loadTracks(input) {
+    const ticket = ++trackSelection;
+    tracks = [];
+    ui.songPick.replaceChildren();
+    ui.trackNav.hidden = true;
+    const files = [...input.files].filter(file => audioExtension.test(file.name));
+    files.sort((a,b) => (a.webkitRelativePath || a.name).localeCompare(
+      b.webkitRelativePath || b.name,"ja",{numeric:true}));
+    if (!files.length) {
+      setStatus(ui.songStatus, "対象の楽曲ファイルがありません。", "error");
+      refresh();
+      return;
+    }
+    setStatus(ui.songStatus, `${files.length}曲の曲名を確認中…`, "busy");
+    const loaded = [];
+    for (let index=0; index<files.length; index+=12) {
+      loaded.push(...await Promise.all(files.slice(index,index+12).map(readSong)));
+      if (ticket !== trackSelection) return;
+    }
+    tracks = loaded;
+    const fragment = document.createDocumentFragment();
+    tracks.forEach((track,index) => {
+      const option=document.createElement("option");
+      option.value=String(index);
+      option.textContent=`${index+1}. ${track.title}`;
+      fragment.append(option);
+    });
+    ui.songPick.append(fragment);
+    ui.trackNav.hidden = false;
+    ui.songPrev.disabled = ui.songNext.disabled = tracks.length < 2;
+    selectTrack(0);
+  }
+
+  for (const input of [ui.songs,ui.songFolder]) input.addEventListener("change", () => loadTracks(input));
+  ui.songPick.addEventListener("change", () => selectTrack(Number(ui.songPick.value)));
+  ui.songPrev.addEventListener("click", () => selectTrack(trackIndex - 1));
+  ui.songNext.addEventListener("click", () => selectTrack(trackIndex + 1));
+  ui.sample.addEventListener("input", () => {
+    refreshGlyphChoices();
+    refresh();
+  });
+  ui.previewLight.addEventListener("change", renderPreview);
+  for (const input of radios("previewFrame")) input.addEventListener("change", () => {
+    stopScroll(true);
+    renderPreview();
+  });
+  ui.scrollTitle.addEventListener("click", () => {
+    if (ui.scrollTitle.disabled) return;
+    scrollPaused = !scrollPaused;
+    if (scrollPaused) stopScroll();
+    renderPreview();
+  });
+  ui.clearPreviewImage.addEventListener("click", () => {
+    previewSelection++;
+    previewImage = previewName = undefined;
+    previewFromSource = false;
+    ui.previewImage.value = "";
+    setStatus(ui.previewImageStatus, "");
+    refresh();
+  });
+  ui.previewImage.addEventListener("change", async () => {
+    const ticket = ++previewSelection;
+    previewImage = previewName = undefined;
+    previewFromSource = false;
+    const file = ui.previewImage.files[0];
+    setStatus(ui.previewImageStatus, file ? "IMGを検証中…" : "", "busy");
+    refresh();
+    if (!file) return;
+    try {
+      const candidate = await inspect(file);
+      if (ticket !== previewSelection) return;
+      const stamp = toHex(candidate.bytes.subarray(0, 10));
+      if (stamp !== stockStamp && stamp !== v16Stamp) throw new Error("V1.6またはV2.0.0用のIMGを選んでください。");
+      if (!candidate.headersMatch) throw new Error("複製ヘッダーが一致しません。壊れていないIMGを選んでください。");
+      // V1.6 IMGs keep their font elsewhere; fit it into the V2.0.0 layout for the preview.
+      previewImage = stamp === stockStamp ? candidate.bytes : fontPreviewBytes({kind:"legacy", bytes:candidate.bytes, start:legacyStart}, source?.bytes);
+      previewName = file.name;
+      setStatus(ui.previewImageStatus, `${file.name} の字形を表示中です。`, "ok");
+    } catch (error) {
+      if (ticket === previewSelection) setStatus(ui.previewImageStatus, error.message, "error");
+    } finally {
+      if (ticket === previewSelection) refresh();
+    }
+  });
+
+  // Step 3: build and save
+  ui.generate.addEventListener("click", async () => {
+    if (ui.generate.disabled) return;
+    const ticket = edit;
+    const inputs = [source, controlsChanged() ? controlSettings() : null, ui.useFont.checked ? external : null,
+      {auto:ui.autoGlyphs.checked, manual:new Map(manualGlyphs),
+        verticalShift:ui.verticalShift.value === "auto" ? undefined : Number(ui.verticalShift.value)},
+      screens.filter(screen => screen.use.checked).map(screen => ({key:screen.target.key, ...screenSettings(screen),
+        images:screen.images.map(({name, sha256, width, height}, index) => ({name, sha256, width, height, bits:screen.bits[index]}))}))];
+    building = true;
+    setStatus(ui.result, "IMGを生成しています…", "busy");
+    refresh();
+    try {
+      await new Promise(resolve => setTimeout(resolve, 20));
+      if (ticket !== edit) return;
+      const built = await buildImage(...inputs);
+      if (ticket !== edit) return;
+      generated = built;
+      const summary = built.report;
+      if (summary.font) setStatus(ui.glyphStatus, `高さ・位置を補正 ${summary.glyphAdjustments.length}字`);
+      const checks = [];
+      if (summary.controls.length) {
+        const assignment = Object.entries(summary.controlAssignment).map(([key, value]) => `${controlKeyNames[key]}=${functionLabel[value]}`);
+        checks.push([`操作の割り当てを変更 ${summary.controls.length}箇所`, "", assignment.join("、")]);
+      }
+      if (summary.font) {
+        const shift = summary.font.verticalShift;
+        const shiftText = !shift ? "" : `上下位置 ${shift.rows === 0 ? "補正なし" : `${Math.abs(shift.rows)}ドット${shift.rows > 0 ? "下" : "上"}へ`}${shift.auto ? "（自動）" : ""}`;
+        checks.push([`置き換えた字形 ${summary.font.replaced.toLocaleString()}件`, "", shiftText]);
+        checks.push([`公式字形を維持 ${summary.font.fallback.toLocaleString()}件`, "", "サイズ・未収録などの理由"]);
+      }
+      for (const screen of summary.screens) {
+        const range = screen.frameCount > 1 ? `${screen.frames}番の${screen.frameCount}コマ` : `${screen.frames.split("-")[0]}番`;
+        checks.push([`${screen.name}を差し替え（${range}）`, "", `画像 ${screen.images.length}枚`]);
+      }
+      checks.push([`複製ヘッダー一致 · CRC ${summary.crc}`, ""]);
+      setStatus(ui.result, "生成しました。保存の前に内容を確認してください。", "ok");
+      setChecks(ui.resultChecks, checks);
+      ui.resultHash.textContent = "SHA-256 " + summary.outputSHA256;
+      ui.resultHash.hidden = false;
+    } catch (error) {
+      if (ticket === edit) setStatus(ui.result, error.message, "error");
+    } finally {
+      building = false;
+      refresh();
+    }
+  });
+  ui.save.addEventListener("click", () => download(generated.output, "NANOV200_CFW.IMG", "application/octet-stream"));
+  ui.report.addEventListener("click", () => download(JSON.stringify(generated.report, null, 2) + "\n", "ECHO-NANO-CFW-report.json", "application/json"));
+  ui.stage.addEventListener("click", async () => {
+    if (ui.stage.disabled) return;
+    const selected = generated;
+    const ticket = edit;
+    staging = true;
+    refresh();
+    try {
+      const handle = await window.showSaveFilePicker({suggestedName:"NANOV200.IMG",
+        types:[{description:"Firmware IMG",accept:{"application/octet-stream":[".img"]}}]});
+      if (ticket !== edit) return;
+      await writeVerifiedCopy(handle, selected);
+      if (ticket === edit) setStatus(ui.result, "更新用コピーを書き込み、SHA-256を照合しました。", "ok");
+    } catch (error) {
+      if (error.name !== "AbortError" && ticket === edit) setStatus(ui.result, "保存に失敗しました。" + error.message, "error");
+    } finally {
+      staging = false;
+      refresh();
+    }
+  });
+
+  layoutCallouts();
+  updateKeymap();
+  refreshGlyphChoices();
+  refresh();
+}
+
+init();
+</script>
+</html>
